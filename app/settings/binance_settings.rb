@@ -49,8 +49,8 @@ module BinanceSettings
   def validate_url!(value)
     uri = URI.parse(value)
 
-    raise ConfigurationError,
-          "Invalid URL: #{value}" unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+    valid = uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS) || uri.scheme == "ws" || uri.scheme == "wss"
+    raise ConfigurationError, "Invalid URL: #{value}" unless valid
 
     true
   rescue URI::InvalidURIError

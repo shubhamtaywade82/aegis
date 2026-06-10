@@ -33,6 +33,23 @@ services:
         condition: service_started
     command: bundle exec sidekiq
 
+  trading_daemon:
+    build:
+      context: .
+    container_name: adaptive_st_daemon
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: bundle exec rake trading:start
+
+
   postgres:
     image: postgres:17
     container_name: adaptive_st_postgres
