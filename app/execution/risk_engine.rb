@@ -1,10 +1,17 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
+require_relative "../value_objects/risk_decision"
 
 module Execution
   class RiskEngine
     class RiskError < StandardError; end
+
+    CORRELATION_GROUPS = [
+      [ "BTC", "ETH" ],
+      [ "SOL", "AVAX", "ADA" ],
+      [ "DOGE", "SHIB", "PEPE" ]
+    ].freeze
 
     attr_reader :max_positions,
                 :max_exposure,
@@ -12,16 +19,24 @@ module Execution
                 :daily_loss_limit,
                 :max_consecutive_losses,
                 :cooldown_period_seconds,
-                :max_exchange_errors
+                :max_trades_per_day,
+                :max_rest_failures,
+                :max_ws_outage_seconds,
+                :max_clock_drift_ms,
+                :max_correlated_positions
 
     def initialize(
-      max_positions: 5,
-      max_exposure: 50_000.0,
-      max_leverage: 10,
-      daily_loss_limit: 1000.0,
+      max_positions: 3,
+      max_exposure: 0.50, # 50% of equity
+      max_leverage: 5,
+      daily_loss_limit: 0.03, # 3% of equity
       max_consecutive_losses: 3,
       cooldown_period_seconds: 14_400, # 4 hours
-      max_exchange_errors: 5
+      max_trades_per_day: 20,
+      max_rest_failures: 5,
+      max_ws_outage_seconds: 60,
+      max_clock_drift_ms: 500,
+      max_correlated_positions: 2
     )
       @max_positions = max_positions
       @max_exposure = BigDecimal(max_exposure.to_s)
@@ -29,7 +44,130 @@ module Execution
       @daily_loss_limit = BigDecimal(daily_loss_limit.to_s)
       @max_consecutive_losses = max_consecutive_losses
       @cooldown_period_seconds = cooldown_period_seconds
-      @max_exchange_errors = max_exchange_errors
+      @max_trades_per_day = max_trades_per_day
+      @max_rest_failures = max_rest_failures
+      @max_ws_outage_seconds = max_ws_outage_seconds
+      @max_clock_drift_ms = max_clock_drift_ms
+      @max_correlated_positions = max_correlated_positions
+    end
+
+    def validate_order!(order_request:, portfolio:, market_context: {})
+      reasons = []
+      severity = :none
+
+      # Level 5: Emergency Controls
+      if market_context[:kill_switch_active]
+        reasons << "Kill switch active"
+        severity = :critical
+      end
+
+      if market_context[:panic_flatten_active]
+        reasons << "Panic flatten active"
+        severity = :critical
+      end
+
+      # Level 4: Infrastructure Risk
+      if (market_context[:rest_failures] || 0) >= max_rest_failures
+        reasons << "REST failure limit exceeded"
+        severity = :critical
+      end
+
+      if (market_context[:websocket_disconnected_seconds] || 0) > max_ws_outage_seconds
+        reasons << "WebSocket outage limit exceeded"
+        severity = :critical
+      end
+
+      if market_context[:reconciliation_failed]
+        reasons << "Reconciliation mismatch detected"
+        severity = :critical
+      end
+
+      clock_drift = (market_context[:clock_drift_ms] || 0).abs
+      if clock_drift > max_clock_drift_ms
+        reasons << "Clock drift limit exceeded"
+        severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+      end
+
+      # Level 3: Daily Risk
+      daily_loss = BigDecimal((market_context[:daily_loss] || 0.0).to_s)
+      daily_loss_limit_val = portfolio.equity * daily_loss_limit
+      if daily_loss >= daily_loss_limit_val
+        reasons << "Daily loss limit exceeded"
+        severity = :critical
+      end
+
+      consecutive_losses = market_context[:consecutive_losses] || 0
+      last_loss_time = market_context[:last_loss_time]
+      if consecutive_losses >= max_consecutive_losses && last_loss_time
+        elapsed = Time.now - last_loss_time
+        if elapsed < cooldown_period_seconds
+          reasons << "Risk cooldown active"
+          severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+        end
+      end
+
+      daily_trades = market_context[:daily_trades_count] || 0
+      if daily_trades >= max_trades_per_day
+        reasons << "Daily trade limit exceeded"
+        severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+      end
+
+      # Level 1: Position Risk & Level 2: Portfolio Risk
+      unless order_request.reduce_only
+        # Position count limit
+        has_pos = portfolio.positions.key?(order_request.symbol)
+        if !has_pos && portfolio.positions.size >= max_positions
+          reasons << "Position count limit exceeded"
+          severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+        end
+
+        # Leverage limit
+        if portfolio.leverage > max_leverage
+          reasons << "Leverage limit exceeded"
+          severity = :critical
+        end
+
+        # Exposure limit
+        current_exposure = portfolio.positions.values.sum { |pos| pos.quantity * pos.mark_price }
+        order_price = order_request.price || market_context[:mark_price] || BigDecimal("0.0")
+        order_exposure = order_request.quantity * order_price
+        potential_exposure = current_exposure + order_exposure
+        max_exposure_value = portfolio.equity * max_exposure
+
+        if potential_exposure > max_exposure_value
+          reasons << "Exposure limit exceeded"
+          severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+        end
+
+        # Correlation limit
+        group = correlation_group_for(order_request.symbol)
+        if group && !has_pos
+          active_in_group = portfolio.positions.keys.count { |sym| group.include?(base_asset_of(sym)) }
+          if active_in_group >= max_correlated_positions
+            reasons << "Correlation limit exceeded"
+            severity = [ severity, :medium ].max_by { |s| severity_priority(s) }
+          end
+        end
+
+        # Risk per trade validation
+        entry_price = order_request.price || market_context[:mark_price]
+        stop_price = market_context[:stop_price] || order_request.stop_price
+        if entry_price && stop_price
+          stop_distance = (entry_price - stop_price).abs
+          if stop_distance.positive? && portfolio.equity.positive?
+            risk_percent = (stop_distance * order_request.quantity) / portfolio.equity
+            if risk_percent > BigDecimal("0.005")
+              reasons << "Risk per trade limit exceeded"
+              severity = [ severity, :high ].max_by { |s| severity_priority(s) }
+            end
+          end
+        end
+      end
+
+      approved = reasons.empty?
+      final_severity = approved ? :none : severity
+
+      RiskDecision.new(approved: approved, reasons: reasons, severity: final_severity)
     end
 
     def check!(
@@ -40,39 +178,53 @@ module Execution
       last_loss_time: nil,
       exchange_errors: 0
     )
-      if exchange_errors >= max_exchange_errors
-        raise RiskError, "Execution circuit breaker active: Exchange errors (#{exchange_errors}) >= limit (#{max_exchange_errors})"
+      # Build a temporary portfolio from current position list
+      portfolio = Portfolio.new(cash_balance: 100_000.0, leverage: max_leverage)
+      active_positions.each do |pos|
+        portfolio.add_position(pos.symbol, pos.side, pos.quantity, pos.entry_price)
+        portfolio.update_mark_price!(pos.symbol, pos.mark_price)
       end
 
-      if daily_loss >= daily_loss_limit
-        raise RiskError, "Daily loss limit exceeded: Daily loss (#{daily_loss.to_f}) >= limit (#{daily_loss_limit.to_f})"
-      end
+      market_context = {
+        daily_loss: daily_loss,
+        consecutive_losses: consecutive_losses,
+        last_loss_time: last_loss_time,
+        rest_failures: exchange_errors
+      }
 
-      if consecutive_losses >= max_consecutive_losses
-        if last_loss_time && (Time.now - last_loss_time) < cooldown_period_seconds
-          remaining = (cooldown_period_seconds - (Time.now - last_loss_time)).round
-          raise RiskError, "Risk cooldown active: #{consecutive_losses} consecutive losses. Cooldown remaining: #{remaining}s"
-        end
-      end
+      decision = validate_order!(
+        order_request: order_request,
+        portfolio: portfolio,
+        market_context: market_context
+      )
 
-      unless order_request.reduce_only
-        has_pos = active_positions.any? { |pos| pos.symbol == order_request.symbol }
-        if !has_pos && active_positions.size >= max_positions
-          raise RiskError, "Position count limit exceeded: Active positions (#{active_positions.size}) >= limit (#{max_positions})"
-        end
-      end
-
-      new_exposure = active_positions.sum { |pos| pos.quantity * pos.mark_price }
-      unless order_request.reduce_only
-        order_price = order_request.price || order_request.stop_price || BigDecimal("0.0")
-        new_exposure += order_request.quantity * order_price
-      end
-
-      if new_exposure > max_exposure
-        raise RiskError, "Exposure limit exceeded: Potential exposure (#{new_exposure.to_f}) > limit (#{max_exposure.to_f})"
+      unless decision.approved?
+        raise RiskError, decision.reasons.join(", ")
       end
 
       true
+    end
+
+    private
+
+    def correlation_group_for(symbol)
+      base = base_asset_of(symbol)
+      CORRELATION_GROUPS.find { |group| group.include?(base) }
+    end
+
+    def base_asset_of(symbol)
+      symbol.to_s.sub(/USDT\z/, "")
+    end
+
+    def severity_priority(severity)
+      case severity.to_sym
+      when :none then 0
+      when :low then 1
+      when :medium then 2
+      when :high then 3
+      when :critical then 4
+      else 0
+      end
     end
   end
 end

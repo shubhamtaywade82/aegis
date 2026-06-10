@@ -8,7 +8,7 @@ module Shared
     def with_retry(
       attempts: DEFAULT_ATTEMPTS,
       base_delay: DEFAULT_BASE_DELAY,
-      retry_on: [StandardError]
+      retry_on: [ StandardError ]
     )
       current_attempt = 0
 

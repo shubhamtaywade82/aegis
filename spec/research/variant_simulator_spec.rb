@@ -76,7 +76,7 @@ RSpec.describe Research::VariantSimulator do
         ]
       end
 
-      let(:atr) { [nil, 1.0, 1.0] }
+      let(:atr) { [ nil, 1.0, 1.0 ] }
 
       it "exits at take profit" do
         trades = simulator.call
@@ -113,7 +113,7 @@ RSpec.describe Research::VariantSimulator do
         ]
       end
 
-      let(:atr) { [nil, 1.0, 1.0] }
+      let(:atr) { [ nil, 1.0, 1.0 ] }
 
       it "exits at stop" do
         trade = simulator.call.first
@@ -140,7 +140,7 @@ RSpec.describe Research::VariantSimulator do
         ]
       end
 
-      let(:atr) { [nil, 1.0, 1.0] }
+      let(:atr) { [ nil, 1.0, 1.0 ] }
 
       it "exits on opposite flip" do
         trade = simulator.call.first
@@ -169,7 +169,7 @@ RSpec.describe Research::VariantSimulator do
         ]
       end
 
-      let(:atr) { [nil, 1.0, 1.0] }
+      let(:atr) { [ nil, 1.0, 1.0 ] }
 
       it "exits at take profit" do
         trade = simulator.call.first
@@ -201,7 +201,7 @@ RSpec.describe Research::VariantSimulator do
         ]
       end
 
-      let(:atr) { [nil, 1.0, 1.0] }
+      let(:atr) { [ nil, 1.0, 1.0 ] }
 
       it "exits at stop" do
         trade = simulator.call.first
@@ -227,7 +227,7 @@ RSpec.describe Research::VariantSimulator do
       ]
     end
 
-    let(:atr) { [nil, 1.0] }
+    let(:atr) { [ nil, 1.0 ] }
 
     it "closes open trades" do
       trade = simulator.call.first
@@ -256,7 +256,7 @@ RSpec.describe Research::VariantSimulator do
       ]
     end
 
-    let(:atr) { [nil, 1.0, 1.0, 1.0] }
+    let(:atr) { [ nil, 1.0, 1.0, 1.0 ] }
 
     it "does not open overlapping positions" do
       trades = simulator.call
@@ -268,7 +268,7 @@ RSpec.describe Research::VariantSimulator do
   describe "input validation" do
     let(:candles) { [] }
     let(:supertrend) { [] }
-    let(:atr) { [1.0] }
+    let(:atr) { [ 1.0 ] }
 
     it "validates array sizes" do
       expect do

@@ -56,7 +56,7 @@ module Indicators
           if previous_upper.nil?
             basic_upper
           elsif candles[index - 1].close <= previous_upper
-            [basic_upper, previous_upper].min
+            [ basic_upper, previous_upper ].min
           else
             basic_upper
           end
@@ -65,7 +65,7 @@ module Indicators
           if previous_lower.nil?
             basic_lower
           elsif candles[index - 1].close >= previous_lower
-            [basic_lower, previous_lower].max
+            [ basic_lower, previous_lower ].max
           else
             basic_lower
           end

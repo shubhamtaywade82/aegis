@@ -35,7 +35,7 @@ RSpec.describe Execution::MatchingEngine do
       )
 
       fills = described_class.match(
-        open_orders: [order],
+        open_orders: [ order ],
         candle: candle,
         latest_price: 100.0,
         slippage_model: slippage_model,
@@ -56,7 +56,7 @@ RSpec.describe Execution::MatchingEngine do
       )
 
       fills = described_class.match(
-        open_orders: [order],
+        open_orders: [ order ],
         candle: candle,
         latest_price: 100.0,
         slippage_model: slippage_model,

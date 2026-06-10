@@ -35,7 +35,7 @@ RSpec.describe Research::MetricsCalculator do
 
     context "all winners" do
       it "caps profit factor and reward risk at 10_000.0" do
-        trades = [build_trade(10.0), build_trade(15.0)]
+        trades = [ build_trade(10.0), build_trade(15.0) ]
         report = described_class.new(trades).call
 
         expect(report.total_trades).to eq(2)
@@ -49,7 +49,7 @@ RSpec.describe Research::MetricsCalculator do
 
     context "all losers" do
       it "has 0.0 profit factor and reward risk" do
-        trades = [build_trade(-10.0), build_trade(-15.0)]
+        trades = [ build_trade(-10.0), build_trade(-15.0) ]
         report = described_class.new(trades).call
 
         expect(report.total_trades).to eq(2)
@@ -95,7 +95,7 @@ RSpec.describe Research::MetricsCalculator do
         ]
         report = described_class.new(trades).call
 
-        expect(report.equity_curve).to eq([10.0, 5.0, 25.0, 10.0, 15.0])
+        expect(report.equity_curve).to eq([ 10.0, 5.0, 25.0, 10.0, 15.0 ])
         expect(report.max_drawdown).to eq(15.0)
       end
     end

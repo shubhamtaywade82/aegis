@@ -25,7 +25,7 @@ RSpec.describe Research::CandleSeries do
   subject(:series) { described_class.new(candles) }
 
   it "returns closes" do
-    expect(series.closes).to eq([105, 106, 107])
+    expect(series.closes).to eq([ 105, 106, 107 ])
   end
 
   it "supports windows" do

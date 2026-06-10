@@ -29,7 +29,7 @@ module Execution
     end
 
     def available_margin
-      [equity - used_margin, BigDecimal("0.0")].max
+      [ equity - used_margin, BigDecimal("0.0") ].max
     end
 
     def unrealized_pnl
