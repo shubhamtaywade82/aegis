@@ -1,21 +1,20 @@
 # frozen_string_literal: true
 
-require_relative '../errors/configuration_error'
+module SidekiqSettings
+  DEFAULT_CONCURRENCY = 10
 
-module Settings
-  class Sidekiq
-    class << self
-      def concurrency
-        Integer(ENV.fetch('SIDEKIQ_CONCURRENCY', '10'))
-      end
+  module_function
 
-      def validate!
-        errors = []
+  def concurrency
+    Settings.integer("SIDEKIQ_CONCURRENCY", DEFAULT_CONCURRENCY)
+  end
 
-        errors << 'SIDEKIQ_CONCURRENCY must be greater than 0' unless concurrency > 0
-
-        raise ConfigurationError, errors.join('; ') unless errors.empty?
-      end
+  def validate!
+    unless concurrency.positive?
+      raise ConfigurationError,
+            "SIDEKIQ_CONCURRENCY must be greater than 0"
     end
+
+    true
   end
 end

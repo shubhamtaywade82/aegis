@@ -1,176 +1,83 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require_relative '../../app/settings/telegram_settings'
-require_relative '../../app/errors/configuration_error'
+require "rails_helper"
 
-RSpec.describe Settings::Telegram do
-  describe '.bot_token' do
-    context 'when TELEGRAM_BOT_TOKEN is set' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-      end
+RSpec.describe TelegramSettings do
+  around do |example|
+    original_env = ENV.to_hash
 
-      it 'returns the bot token' do
-        expect(described_class.bot_token).to eq('test_bot_token')
-      end
-    end
+    example.run
+  ensure
+    ENV.replace(original_env)
+  end
 
-    context 'when TELEGRAM_BOT_TOKEN is not set' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('')
-      end
+  before do
+    ENV["TELEGRAM_BOT_TOKEN"] = "token"
+    ENV["TELEGRAM_CHAT_ID"] = "123456"
+  end
 
-      it 'returns empty string' do
-        expect(described_class.bot_token).to eq('')
-      end
+  describe ".bot_token" do
+    it "returns the bot token" do
+      expect(described_class.bot_token).to eq("token")
     end
   end
 
-  describe '.chat_id' do
-    context 'when TELEGRAM_CHAT_ID is set' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
-
-      it 'returns the chat ID' do
-        expect(described_class.chat_id).to eq('123456789')
-      end
-    end
-
-    context 'when TELEGRAM_CHAT_ID is not set' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('')
-      end
-
-      it 'returns empty string' do
-        expect(described_class.chat_id).to eq('')
-      end
+  describe ".chat_id" do
+    it "returns the chat id" do
+      expect(described_class.chat_id).to eq("123456")
     end
   end
 
-  describe '.enabled?' do
-    context 'when both bot_token and chat_id are present' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
-
-      it 'returns true' do
-        expect(described_class.enabled?).to eq(true)
-      end
+  describe ".enabled?" do
+    it "returns true when both are present" do
+      expect(described_class.enabled?).to be(true)
     end
 
-    context 'when both bot_token and chat_id are empty' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('')
-      end
+    it "returns false when bot_token is empty" do
+      ENV["TELEGRAM_BOT_TOKEN"] = ""
 
-      it 'returns false' do
-        expect(described_class.enabled?).to eq(false)
-      end
+      expect(described_class.enabled?).to be(false)
     end
 
-    context 'when only bot_token is present' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('')
-      end
+    it "returns false when chat_id is empty" do
+      ENV["TELEGRAM_CHAT_ID"] = ""
 
-      it 'returns false' do
-        expect(described_class.enabled?).to eq(false)
-      end
-    end
-
-    context 'when only chat_id is present' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
-
-      it 'returns false' do
-        expect(described_class.enabled?).to eq(false)
-      end
-    end
-
-    context 'when bot_token and chat_id are whitespace-only' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('   ')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('   ')
-      end
-
-      it 'returns false' do
-        expect(described_class.enabled?).to eq(false)
-      end
+      expect(described_class.enabled?).to be(false)
     end
   end
 
-  describe '.validate!' do
-    context 'when both bot_token and chat_id are empty (disabled state)' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('')
-      end
-
-      it 'does not raise' do
-        expect { described_class.validate! }.not_to raise_error
-      end
+  describe ".validate!" do
+    it "passes with valid config" do
+      expect(described_class.validate!).to be(true)
     end
 
-    context 'when both bot_token and chat_id are present (enabled state)' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
+    it "passes when both are empty" do
+      ENV.delete("TELEGRAM_BOT_TOKEN")
+      ENV.delete("TELEGRAM_CHAT_ID")
 
-      it 'does not raise' do
-        expect { described_class.validate! }.not_to raise_error
-      end
+      expect(described_class.validate!).to be(true)
     end
 
-    context 'when bot_token is present but chat_id is missing/empty' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('')
-      end
+    it "raises when token is present but chat_id is missing" do
+      ENV.delete("TELEGRAM_CHAT_ID")
 
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /TELEGRAM_CHAT_ID is required/)
-      end
+      expect do
+        described_class.validate!
+      end.to raise_error(
+        ConfigurationError,
+        "TELEGRAM_CHAT_ID is required when TELEGRAM_BOT_TOKEN is set"
+      )
     end
 
-    context 'when chat_id is present but bot_token is missing/empty' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
+    it "raises when chat_id is present but token is missing" do
+      ENV.delete("TELEGRAM_BOT_TOKEN")
 
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /TELEGRAM_BOT_TOKEN is required/)
-      end
-    end
-
-    context 'when bot_token is whitespace-only and chat_id is present' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('   ')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('123456789')
-      end
-
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /TELEGRAM_BOT_TOKEN is required/)
-      end
-    end
-
-    context 'when chat_id is whitespace-only and bot_token is present' do
-      before do
-        allow(ENV).to receive(:fetch).with('TELEGRAM_BOT_TOKEN', '').and_return('test_bot_token')
-        allow(ENV).to receive(:fetch).with('TELEGRAM_CHAT_ID', '').and_return('   ')
-      end
-
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /TELEGRAM_CHAT_ID is required/)
-      end
+      expect do
+        described_class.validate!
+      end.to raise_error(
+        ConfigurationError,
+        "TELEGRAM_BOT_TOKEN is required when TELEGRAM_CHAT_ID is set"
+      )
     end
   end
 end

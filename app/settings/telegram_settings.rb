@@ -1,38 +1,34 @@
 # frozen_string_literal: true
 
-require_relative '../errors/configuration_error'
+module TelegramSettings
+  module_function
 
-module Settings
-  class Telegram
-    class << self
-      def bot_token
-        ENV.fetch('TELEGRAM_BOT_TOKEN', '')
-      end
+  def bot_token
+    Settings.env("TELEGRAM_BOT_TOKEN", "")
+  end
 
-      def chat_id
-        ENV.fetch('TELEGRAM_CHAT_ID', '')
-      end
+  def chat_id
+    Settings.env("TELEGRAM_CHAT_ID", "")
+  end
 
-      def enabled?
-        !bot_token.strip.empty? && !chat_id.strip.empty?
-      end
+  def enabled?
+    !Settings.blank?(bot_token) && !Settings.blank?(chat_id)
+  end
 
-      def validate!
-        errors = []
+  def validate!
+    token_present = !Settings.blank?(bot_token)
+    chat_id_present = !Settings.blank?(chat_id)
 
-        token_present = !bot_token.strip.empty?
-        chat_id_present = !chat_id.strip.empty?
-
-        if token_present && !chat_id_present
-          errors << 'TELEGRAM_CHAT_ID is required when TELEGRAM_BOT_TOKEN is set'
-        end
-
-        if chat_id_present && !token_present
-          errors << 'TELEGRAM_BOT_TOKEN is required when TELEGRAM_CHAT_ID is set'
-        end
-
-        raise ConfigurationError, errors.join('; ') unless errors.empty?
-      end
+    if token_present && !chat_id_present
+      raise ConfigurationError,
+            "TELEGRAM_CHAT_ID is required when TELEGRAM_BOT_TOKEN is set"
     end
+
+    if chat_id_present && !token_present
+      raise ConfigurationError,
+            "TELEGRAM_BOT_TOKEN is required when TELEGRAM_CHAT_ID is set"
+    end
+
+    true
   end
 end

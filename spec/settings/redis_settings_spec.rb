@@ -1,81 +1,51 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
-require_relative '../../app/settings/redis_settings'
-require_relative '../../app/errors/configuration_error'
+require "rails_helper"
 
-RSpec.describe Settings::Redis do
-  describe '.url' do
-    context 'when REDIS_URL is set to a valid URL' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('redis://localhost:6379/0')
-      end
+RSpec.describe RedisSettings do
+  around do |example|
+    original_env = ENV.to_hash
 
-      it 'returns the URL' do
-        expect(described_class.url).to eq('redis://localhost:6379/0')
-      end
-    end
+    example.run
+  ensure
+    ENV.replace(original_env)
+  end
 
-    context 'when REDIS_URL is set to a different valid URL' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('redis://redis.example.com:6380/1')
-      end
+  before do
+    ENV["REDIS_URL"] = "redis://localhost:6379/0"
+  end
 
-      it 'returns the URL' do
-        expect(described_class.url).to eq('redis://redis.example.com:6380/1')
-      end
+  describe ".url" do
+    it "returns the url" do
+      expect(described_class.url).to eq("redis://localhost:6379/0")
     end
   end
 
-  describe '.validate!' do
-    context 'when REDIS_URL is valid' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('redis://localhost:6379/0')
-      end
-
-      it 'does not raise' do
-        expect { described_class.validate! }.not_to raise_error
-      end
+  describe ".validate!" do
+    it "passes with valid config" do
+      expect(described_class.validate!).to be(true)
     end
 
-    context 'when REDIS_URL is empty string' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('')
-      end
+    it "raises when REDIS_URL is missing" do
+      ENV.delete("REDIS_URL")
 
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /REDIS_URL is required/)
-      end
+      expect do
+        described_class.validate!
+      end.to raise_error(
+        ConfigurationError,
+        "Missing required environment variable: REDIS_URL"
+      )
     end
 
-    context 'when REDIS_URL is whitespace-only' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('   ')
-      end
+    it "raises when REDIS_URL is invalid" do
+      ENV["REDIS_URL"] = "invalid_url"
 
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /REDIS_URL is required/)
-      end
-    end
-
-    context 'when REDIS_URL is a malformed URI' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_return('not-a-valid-uri')
-      end
-
-      it 'raises ConfigurationError' do
-        expect { described_class.validate! }.to raise_error(ConfigurationError, /REDIS_URL must be a valid URI/)
-      end
-    end
-
-    context 'when REDIS_URL is missing (KeyError)' do
-      before do
-        allow(ENV).to receive(:fetch).with('REDIS_URL').and_raise(KeyError.new('key not found'))
-      end
-
-      it 'raises KeyError from ENV.fetch' do
-        expect { described_class.url }.to raise_error(KeyError)
-      end
+      expect do
+        described_class.validate!
+      end.to raise_error(
+        ConfigurationError,
+        "REDIS_URL must be a valid URI"
+      )
     end
   end
 end

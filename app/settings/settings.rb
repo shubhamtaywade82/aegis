@@ -1,11 +1,20 @@
 # frozen_string_literal: true
 
+require_relative "binance_settings"
+require_relative "research_settings"
+require_relative "telegram_settings"
+require_relative "sidekiq_settings"
+require_relative "redis_settings"
+
 module Settings
   module_function
 
   def validate!
     BinanceSettings.validate!
     ResearchSettings.validate!
+    TelegramSettings.validate!
+    SidekiqSettings.validate!
+    RedisSettings.validate!
 
     true
   end

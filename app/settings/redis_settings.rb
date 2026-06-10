@@ -1,29 +1,29 @@
 # frozen_string_literal: true
 
-require 'uri'
-require_relative '../errors/configuration_error'
+require "uri"
 
-module Settings
-  class Redis
-    class << self
-      def url
-        ENV.fetch('REDIS_URL')
-      end
+module RedisSettings
+  module_function
 
-      def validate!
-        errors = []
+  def url
+    Settings.env!("REDIS_URL")
+  end
 
-        errors << 'REDIS_URL is required' if url.strip.empty?
+  def validate!
+    validate_url!
 
-        begin
-          uri = URI.parse(url)
-          errors << 'REDIS_URL must be a valid URI' unless uri.scheme && uri.host
-        rescue URI::Error
-          errors << 'REDIS_URL must be a valid URI'
-        end
+    true
+  end
 
-        raise ConfigurationError, errors.join('; ') unless errors.empty?
-      end
-    end
+  def validate_url!
+    uri = URI.parse(url)
+
+    raise ConfigurationError,
+          "REDIS_URL must be a valid URI" unless uri.scheme && uri.host
+
+    true
+  rescue URI::InvalidURIError
+    raise ConfigurationError,
+          "REDIS_URL must be a valid URI"
   end
 end
