@@ -18,7 +18,9 @@ module Exchanges
 
       # Connects using EventMachine and Faye::WebSocket
       def connect(listen_key = nil)
-        url = listen_key ? "#{@ws_url}/#{listen_key}" : @ws_url
+        url = @ws_url
+        url += "/ws" unless url.end_with?("/ws")
+        url = listen_key ? "#{url}/#{listen_key}" : url
         @status = :connecting
 
         EM.run do
