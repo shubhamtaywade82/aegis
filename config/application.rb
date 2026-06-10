@@ -25,6 +25,7 @@ module Aegis
 
     initializer "zeitwerk_ignore_portfolio" do
       Rails.autoloaders.main.ignore(Rails.root.join("app/execution/portfolio.rb"))
+      Rails.autoloaders.main.ignore(Rails.root.join("app/exchanges"))
     end
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do

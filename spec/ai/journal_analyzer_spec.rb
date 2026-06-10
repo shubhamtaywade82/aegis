@@ -5,8 +5,8 @@ require_relative "../../app/ai/provider_router"
 require_relative "../../app/ai/journal_analyzer"
 require_relative "../../app/value_objects/closed_trade"
 
-RSpec.describe Ai::JournalAnalyzer do
-  let(:router) { Ai::ProviderRouter.new(provider: :simulated) }
+RSpec.describe AI::JournalAnalyzer do
+  let(:router) { AI::ProviderRouter.new(provider: :simulated) }
   let(:analyzer) { described_class.new(provider_router: router) }
   let(:closed_trade) do
     ClosedTrade.new(
