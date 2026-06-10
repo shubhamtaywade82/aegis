@@ -37,7 +37,7 @@ RSpec.describe 'Error Hierarchy' do
     end
 
     it 'can be raised and caught as ApplicationError' do
-      expect { raise ExternalServiceError, 'service down' }.to raise_error(ApplicationError)
+      expect { raise ExternalServiceError.new('service down', service: :test) }.to raise_error(ApplicationError)
     end
   end
 

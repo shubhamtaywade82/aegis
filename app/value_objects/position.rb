@@ -1,17 +1,38 @@
 # frozen_string_literal: true
 
-class Position < Data.define(
-  :symbol,
-  :side,
-  :entry_time,
-  :entry_price,
-  :quantity,
-  :stop_loss,
-  :take_profit,
-  :trail_stop
-)
+class Position
+  attr_reader :symbol,
+              :side,
+              :entry_time,
+              :entry_price,
+              :quantity,
+              :stop_loss,
+              :take_profit,
+              :trail_stop
+
   LONG = :long
   SHORT = :short
+
+  def initialize(
+    symbol:,
+    side:,
+    entry_time:,
+    entry_price:,
+    quantity:,
+    stop_loss:,
+    take_profit:,
+    trail_stop:
+  )
+    @symbol = symbol
+    @side = side
+    @entry_time = entry_time
+    @entry_price = entry_price
+    @quantity = quantity
+    @stop_loss = stop_loss
+    @take_profit = take_profit
+    @trail_stop = trail_stop
+    freeze
+  end
 
   def long?
     side == LONG

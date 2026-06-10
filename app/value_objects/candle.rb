@@ -1,18 +1,45 @@
 # frozen_string_literal: true
 
-class Candle < Data.define(
-  :open_time,
-  :open,
-  :high,
-  :low,
-  :close,
-  :volume,
-  :close_time,
-  :quote_volume,
-  :trade_count,
-  :taker_buy_base_volume,
-  :taker_buy_quote_volume
-)
+class Candle
+  attr_reader :open_time,
+              :open,
+              :high,
+              :low,
+              :close,
+              :volume,
+              :close_time,
+              :quote_volume,
+              :trade_count,
+              :taker_buy_base_volume,
+              :taker_buy_quote_volume
+
+  def initialize(
+    open_time:,
+    open:,
+    high:,
+    low:,
+    close:,
+    volume:,
+    close_time:,
+    quote_volume:,
+    trade_count:,
+    taker_buy_base_volume:,
+    taker_buy_quote_volume:
+  )
+    @open_time = open_time
+    @open = open
+    @high = high
+    @low = low
+    @close = close
+    @volume = volume
+    @close_time = close_time
+    @quote_volume = quote_volume
+    @trade_count = trade_count
+    @taker_buy_base_volume = taker_buy_base_volume
+    @taker_buy_quote_volume = taker_buy_quote_volume
+    freeze
+  end
+
   def bullish?
     close > open
   end

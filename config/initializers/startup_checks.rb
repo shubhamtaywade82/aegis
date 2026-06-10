@@ -11,5 +11,7 @@ unless Rails.env.test?
     Rails.logger.info(
       "[StartupChecks] Configuration validation completed successfully"
     )
+  rescue ConfigurationError => e
+    Kernel.abort("\n=== CONFIGURATION ERROR ===\n#{e.message}\n===========================\n")
   end
 end

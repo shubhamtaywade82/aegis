@@ -1,18 +1,41 @@
 # frozen_string_literal: true
 
-class Trade < Data.define(
-  :symbol,
-  :side,
-  :entry_time,
-  :exit_time,
-  :entry_price,
-  :exit_price,
-  :quantity,
-  :fees,
-  :reason
-)
+class Trade
+  attr_reader :symbol,
+              :side,
+              :entry_time,
+              :exit_time,
+              :entry_price,
+              :exit_price,
+              :quantity,
+              :fees,
+              :reason
+
   LONG = :long
   SHORT = :short
+
+  def initialize(
+    symbol:,
+    side:,
+    entry_time:,
+    exit_time:,
+    entry_price:,
+    exit_price:,
+    quantity:,
+    fees:,
+    reason:
+  )
+    @symbol = symbol
+    @side = side
+    @entry_time = entry_time
+    @exit_time = exit_time
+    @entry_price = entry_price
+    @exit_price = exit_price
+    @quantity = quantity
+    @fees = fees
+    @reason = reason
+    freeze
+  end
 
   def pnl
     gross_pnl - fees
