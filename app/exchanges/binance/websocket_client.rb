@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require "faye/websocket"
+require "eventmachine"
+require "json"
+
 module Exchanges
   module Binance
     class WebsocketClient
@@ -12,10 +16,43 @@ module Exchanges
         @callbacks = {}
       end
 
-      def connect(listen_key)
-        @status = :connected
-        @last_heartbeat = Time.now
-        trigger(:connected, nil)
+      # Connects using EventMachine and Faye::WebSocket
+      def connect(listen_key = nil)
+        url = listen_key ? "#{@ws_url}/#{listen_key}" : @ws_url
+        @status = :connecting
+
+        EM.run do
+          @ws = Faye::WebSocket::Client.new(url)
+
+          @ws.on :open do |event|
+            @status = :connected
+            @last_heartbeat = Time.now
+            trigger(:connected, event)
+          end
+
+          @ws.on :message do |event|
+            @last_heartbeat = Time.now
+            begin
+              data = JSON.parse(event.data)
+              trigger(:message, data)
+            rescue StandardError => e
+              trigger(:error, "Failed to parse message JSON: #{e.message}")
+            end
+          end
+
+          @ws.on :close do |event|
+            @status = :disconnected
+            trigger(:disconnected, event)
+            EM.stop
+          end
+
+          @ws.on :error do |event|
+            trigger(:error, event.message)
+          end
+        end
+      rescue StandardError => e
+        @status = :disconnected
+        trigger(:error, "WebSocket Client encountered connection error: #{e.message}")
       end
 
       def on(event, &block)
@@ -23,6 +60,7 @@ module Exchanges
       end
 
       def disconnect
+        @ws&.close
         @status = :disconnected
         trigger(:disconnected, nil)
       end

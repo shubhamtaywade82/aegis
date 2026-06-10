@@ -85,6 +85,9 @@ gem "oj"
 gem "dotenv-rails"
 gem "parallel"
 gem "connection_pool"
+gem "faye-websocket"
+gem "eventmachine"
+
 
 group :test do
   gem "database_cleaner-active_record"
