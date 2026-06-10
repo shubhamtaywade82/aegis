@@ -4,12 +4,26 @@ module Research
   class CandleSeries
     include Enumerable
 
-    attr_reader :candles
+    attr_reader :candles,
+                :opens,
+                :highs,
+                :lows,
+                :closes,
+                :volumes,
+                :open_times,
+                :close_times
 
     def initialize(candles)
       raise ArgumentError, "candles must be an Array" unless candles.is_a?(Array)
 
       @candles = candles.freeze
+      @opens = @candles.map(&:open).freeze
+      @highs = @candles.map(&:high).freeze
+      @lows = @candles.map(&:low).freeze
+      @closes = @candles.map(&:close).freeze
+      @volumes = @candles.map(&:volume).freeze
+      @open_times = @candles.map(&:open_time).freeze
+      @close_times = @candles.map(&:close_time).freeze
       freeze
     end
 
@@ -54,34 +68,6 @@ module Research
       candles.each_cons(size) do |window|
         yield self.class.new(window)
       end
-    end
-
-    def opens
-      @opens ||= candles.map(&:open).freeze
-    end
-
-    def highs
-      @highs ||= candles.map(&:high).freeze
-    end
-
-    def lows
-      @lows ||= candles.map(&:low).freeze
-    end
-
-    def closes
-      @closes ||= candles.map(&:close).freeze
-    end
-
-    def volumes
-      @volumes ||= candles.map(&:volume).freeze
-    end
-
-    def open_times
-      @open_times ||= candles.map(&:open_time).freeze
-    end
-
-    def close_times
-      @close_times ||= candles.map(&:close_time).freeze
     end
 
     def to_a

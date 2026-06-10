@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "rails_helper"
+require_relative "../../app/indicators/atr"
+require_relative "../../app/indicators/supertrend"
 
 RSpec.describe Indicators::Supertrend do
   it "calculates supertrend" do
@@ -8,10 +10,10 @@ RSpec.describe Indicators::Supertrend do
       30.times.map do |i|
         Candle.new(
           open_time: Time.current,
-          open: 100 + i,
-          high: 105 + i,
-          low: 95 + i,
-          close: 102 + i,
+          open: 100 + i * 2,
+          high: 105 + i * 2,
+          low: 95 + i * 2,
+          close: 102 + i * 2,
           volume: 1,
           close_time: Time.current,
           quote_volume: 0,
