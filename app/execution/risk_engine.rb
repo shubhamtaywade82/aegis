@@ -189,10 +189,11 @@ module Execution
       daily_loss:,
       consecutive_losses:,
       last_loss_time: nil,
-      exchange_errors: 0
+      exchange_errors: 0,
+      cash_balance: 100_000.0
     )
       # Build a temporary portfolio from current position list
-      portfolio = Portfolio.new(cash_balance: 100_000.0, leverage: max_leverage)
+      portfolio = Portfolio.new(cash_balance: cash_balance, leverage: max_leverage)
       active_positions.each do |pos|
         portfolio.add_position(pos.symbol, pos.side, pos.quantity, pos.entry_price)
         portfolio.update_mark_price!(pos.symbol, pos.mark_price)

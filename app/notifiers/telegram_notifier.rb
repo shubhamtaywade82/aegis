@@ -88,7 +88,23 @@ module Notifiers
 
     def send_message(text)
       @sent_messages << text
-      true
+
+      return true unless TelegramSettings.enabled?
+
+      token = @token || TelegramSettings.bot_token
+      chat_id = @chat_id || TelegramSettings.chat_id
+
+      begin
+        response = Faraday.post(
+          "https://api.telegram.org/bot#{token}/sendMessage",
+          { chat_id: chat_id, text: text }.to_json,
+          { "Content-Type" => "application/json" }
+        )
+        response.success?
+      rescue StandardError => e
+        Rails.logger.error("[TelegramNotifier] Failed to send message: #{e.message}")
+        false
+      end
     end
   end
 end
