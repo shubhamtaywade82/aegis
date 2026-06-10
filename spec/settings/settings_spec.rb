@@ -99,4 +99,26 @@ RSpec.describe Settings do
       ).to be(true)
     end
   end
+
+  describe ".validate!" do
+    before do
+      ENV["BINANCE_API_KEY"] = "key"
+      ENV["BINANCE_API_SECRET"] = "secret"
+      ENV["BINANCE_BASE_URL"] = "https://fapi.binance.com"
+      ENV["BINANCE_WS_URL"] = "https://fstream.binance.com"
+
+      ENV["OPTIMIZATION_BARS"] = "500"
+      ENV["FORWARD_BARS"] = "100"
+      ENV["MINIMUM_TRADES"] = "20"
+      ENV["ATR_STOP_MULTIPLIER"] = "1.0"
+      ENV["REWARD_RISK_RATIO"] = "2.0"
+
+      ENV["SIDEKIQ_CONCURRENCY"] = "10"
+      ENV["REDIS_URL"] = "redis://localhost:6379/0"
+    end
+
+    it "validates all settings successfully" do
+      expect(described_class.validate!).to be(true)
+    end
+  end
 end

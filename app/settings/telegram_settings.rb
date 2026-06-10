@@ -3,32 +3,34 @@
 module TelegramSettings
   module_function
 
+  def enabled?
+    bot_token_present? || chat_id_present?
+  end
+
   def bot_token
-    Settings.env("TELEGRAM_BOT_TOKEN", "")
+    Settings.env!("TELEGRAM_BOT_TOKEN")
   end
 
   def chat_id
-    Settings.env("TELEGRAM_CHAT_ID", "")
-  end
-
-  def enabled?
-    !Settings.blank?(bot_token) && !Settings.blank?(chat_id)
+    Settings.env!("TELEGRAM_CHAT_ID")
   end
 
   def validate!
-    token_present = !Settings.blank?(bot_token)
-    chat_id_present = !Settings.blank?(chat_id)
+    return true unless enabled?
 
-    if token_present && !chat_id_present
+    unless bot_token_present? && chat_id_present?
       raise ConfigurationError,
-            "TELEGRAM_CHAT_ID is required when TELEGRAM_BOT_TOKEN is set"
-    end
-
-    if chat_id_present && !token_present
-      raise ConfigurationError,
-            "TELEGRAM_BOT_TOKEN is required when TELEGRAM_CHAT_ID is set"
+            "TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must both be configured"
     end
 
     true
+  end
+
+  def bot_token_present?
+    !Settings.blank?(ENV["TELEGRAM_BOT_TOKEN"])
+  end
+
+  def chat_id_present?
+    !Settings.blank?(ENV["TELEGRAM_CHAT_ID"])
   end
 end

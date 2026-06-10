@@ -11,16 +11,14 @@ RSpec.describe SidekiqSettings do
     ENV.replace(original_env)
   end
 
-  before do
-    ENV["SIDEKIQ_CONCURRENCY"] = "15"
-  end
-
   describe ".concurrency" do
-    it "returns integer value" do
-      expect(described_class.concurrency).to eq(15)
+    it "uses configured value" do
+      ENV["SIDEKIQ_CONCURRENCY"] = "25"
+
+      expect(described_class.concurrency).to eq(25)
     end
 
-    it "returns default when missing" do
+    it "uses default value" do
       ENV.delete("SIDEKIQ_CONCURRENCY")
 
       expect(described_class.concurrency).to eq(10)
@@ -28,18 +26,31 @@ RSpec.describe SidekiqSettings do
   end
 
   describe ".validate!" do
-    it "passes with valid config" do
+    it "passes with valid concurrency" do
+      ENV["SIDEKIQ_CONCURRENCY"] = "5"
+
       expect(described_class.validate!).to be(true)
     end
 
-    it "raises when concurrency is not positive" do
+    it "fails with zero concurrency" do
       ENV["SIDEKIQ_CONCURRENCY"] = "0"
 
       expect do
         described_class.validate!
       end.to raise_error(
         ConfigurationError,
-        "SIDEKIQ_CONCURRENCY must be greater than 0"
+        "SIDEKIQ_CONCURRENCY must be greater than zero"
+      )
+    end
+
+    it "fails with negative concurrency" do
+      ENV["SIDEKIQ_CONCURRENCY"] = "-1"
+
+      expect do
+        described_class.validate!
+      end.to raise_error(
+        ConfigurationError,
+        "SIDEKIQ_CONCURRENCY must be greater than zero"
       )
     end
   end
