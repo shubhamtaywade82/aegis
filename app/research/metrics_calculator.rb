@@ -3,54 +3,16 @@
 require_relative "../value_objects/performance_report"
 
 module Research
-  module MetricsCalculator
-    module_function
+  class MetricsCalculator
+    attr_reader :trades
 
-    def calculate(trades)
-      return empty_report(trades) if trades.empty?
+    def initialize(trades)
+      @trades = trades.freeze
+    end
 
-      # Group wins and losses
-      winning_trades, losing_trades = trades.partition(&:winner?)
-
-      wins = winning_trades.size
-      losses = losing_trades.size
-
-      gross_profit = winning_trades.sum(&:pnl).to_f
-      gross_loss = losing_trades.sum { |t| t.pnl.abs }.to_f
-
-      net_profit = gross_profit - gross_loss
-
-      profit_factor =
-        if gross_loss.zero?
-          gross_profit.positive? ? Float::INFINITY : 0.0
-        else
-          gross_profit / gross_loss
-        end
-
-      win_rate = (wins.to_f / trades.size) * 100.0
-      average_trade = net_profit / trades.size
-
-      # Reward/Risk: average win / average loss
-      avg_win = wins.positive? ? (gross_profit / wins) : 0.0
-      avg_loss = losses.positive? ? (gross_loss / losses) : 0.0
-      reward_risk = avg_loss.zero? ? avg_win : avg_win / avg_loss
-
-      # Max Drawdown
-      equity = 0.0
-      peak = 0.0
-      max_drawdown = 0.0
-
-      # Sort by exit time to reconstruct equity curve sequence
-      sorted_trades = trades.sort_by(&:exit_time)
-      sorted_trades.each do |trade|
-        equity += trade.pnl
-        peak = equity if equity > peak
-        dd = peak - equity
-        max_drawdown = dd if dd > max_drawdown
-      end
-
+    def call
       PerformanceReport.new(
-        trades: trades,
+        total_trades: total_trades,
         wins: wins,
         losses: losses,
         gross_profit: gross_profit,
@@ -60,24 +22,102 @@ module Research
         win_rate: win_rate,
         average_trade: average_trade,
         reward_risk: reward_risk,
-        max_drawdown: max_drawdown
+        max_drawdown: max_drawdown,
+        equity_curve: equity_curve
       )
     end
 
-    def empty_report(trades)
-      PerformanceReport.new(
-        trades: trades,
-        wins: 0,
-        losses: 0,
-        gross_profit: 0.0,
-        gross_loss: 0.0,
-        net_profit: 0.0,
-        profit_factor: 0.0,
-        win_rate: 0.0,
-        average_trade: 0.0,
-        reward_risk: 0.0,
-        max_drawdown: 0.0
-      )
+    private
+
+    def total_trades
+      trades.size
+    end
+
+    def winning_trades
+      @winning_trades ||= trades.select(&:winner?)
+    end
+
+    def losing_trades
+      @losing_trades ||= trades.select(&:loser?)
+    end
+
+    def wins
+      winning_trades.size
+    end
+
+    def losses
+      losing_trades.size
+    end
+
+    def gross_profit
+      winning_trades.sum(&:pnl).round(8)
+    end
+
+    def gross_loss
+      losing_trades.sum { |trade| trade.pnl.abs }.round(8)
+    end
+
+    def net_profit
+      trades.sum(&:pnl).round(8)
+    end
+
+    def profit_factor
+      return 0.0 if gross_profit.zero? && gross_loss.zero?
+
+      return 10_000.0 if gross_loss.zero?
+
+      (gross_profit / gross_loss).round(4)
+    end
+
+    def win_rate
+      return 0.0 if total_trades.zero?
+
+      ((wins.to_f / total_trades) * 100.0).round(2)
+    end
+
+    def average_trade
+      return 0.0 if total_trades.zero?
+
+      (net_profit / total_trades).round(8)
+    end
+
+    def reward_risk
+      return 0.0 if wins.zero?
+      return 10_000.0 if losses.zero?
+
+      average_win = gross_profit / wins
+      average_loss = gross_loss / losses
+
+      return 0.0 if average_loss.zero? && average_win.zero?
+      return 10_000.0 if average_loss.zero?
+
+      (average_win / average_loss).round(4)
+    end
+
+    def equity_curve
+      @equity_curve ||= begin
+        equity = 0.0
+
+        trades.map do |trade|
+          equity += trade.pnl
+          equity.round(8)
+        end.freeze
+      end
+    end
+
+    def max_drawdown
+      return 0.0 if equity_curve.empty?
+
+      peak = equity_curve.first
+      maximum_drawdown = 0.0
+
+      equity_curve.each do |equity|
+        peak = [peak, equity].max
+        drawdown = peak - equity
+        maximum_drawdown = [maximum_drawdown, drawdown].max
+      end
+
+      maximum_drawdown.round(8)
     end
   end
 end
