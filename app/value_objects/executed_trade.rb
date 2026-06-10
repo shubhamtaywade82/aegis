@@ -1,49 +1,55 @@
 # frozen_string_literal: true
 
-require "bigdecimal"
-
 class ExecutedTrade
-  attr_reader :original_trade,
-              :executed_entry_price,
-              :executed_exit_price,
-              :slippage_cost,
-              :fee_cost,
+  attr_reader :trade,
+              :adjusted_entry_price,
+              :adjusted_exit_price,
+              :fees,
               :funding_cost,
-              :executed_pnl
+              :slippage_cost,
+              :research_pnl,
+              :execution_pnl
 
   def initialize(
-    original_trade:,
-    executed_entry_price:,
-    executed_exit_price:,
-    slippage_cost:,
-    fee_cost:,
+    trade:,
+    adjusted_entry_price:,
+    adjusted_exit_price:,
+    fees:,
     funding_cost:,
-    executed_pnl:
+    slippage_cost:
   )
-    @original_trade = original_trade
-    @executed_entry_price = BigDecimal(executed_entry_price.to_s)
-    @executed_exit_price = BigDecimal(executed_exit_price.to_s)
-    @slippage_cost = BigDecimal(slippage_cost.to_s)
-    @fee_cost = BigDecimal(fee_cost.to_s)
-    @funding_cost = BigDecimal(funding_cost.to_s)
-    @executed_pnl = BigDecimal(executed_pnl.to_s)
+    @trade = trade
+
+    @adjusted_entry_price = adjusted_entry_price
+    @adjusted_exit_price = adjusted_exit_price
+
+    @fees = fees
+    @funding_cost = funding_cost
+    @slippage_cost = slippage_cost
+
+    @research_pnl = trade.pnl
+    @execution_pnl = calculate_execution_pnl
 
     freeze
   end
 
-  delegate :symbol,
-           :side,
-           :entry_time,
-           :exit_time,
-           :quantity,
-           :reason,
-           to: :original_trade
+  private
 
-  def winner?
-    executed_pnl.positive?
-  end
+  def calculate_execution_pnl
+    gross =
+      case trade.side
+      when :long
+        (adjusted_exit_price - adjusted_entry_price) *
+          trade.quantity
+      when :short
+        (adjusted_entry_price - adjusted_exit_price) *
+          trade.quantity
+      end
 
-  def loser?
-    executed_pnl.negative?
+    (
+      gross -
+      fees -
+      funding_cost
+    ).round(8)
   end
 end

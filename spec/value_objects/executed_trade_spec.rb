@@ -20,39 +20,27 @@ RSpec.describe ExecutedTrade do
 
   subject(:executed) do
     described_class.new(
-      original_trade: original_trade,
-      executed_entry_price: 100.1,
-      executed_exit_price: 104.9,
+      trade: original_trade,
+      adjusted_entry_price: 100.1,
+      adjusted_exit_price: 104.9,
       slippage_cost: 0.2,
-      fee_cost: 0.1,
-      funding_cost: 0.0,
-      executed_pnl: 4.5
+      fees: 0.1,
+      funding_cost: 0.0
     )
   end
 
-  it "delegates attributes to the original trade" do
-    expect(executed.symbol).to eq("SOLUSDT")
-    expect(executed.side).to eq(:long)
-    expect(executed.quantity).to eq(1.0)
-    expect(executed.entry_time).to eq(Time.at(0))
+  it "holds correct attributes" do
+    expect(executed.trade).to eq(original_trade)
+    expect(executed.adjusted_entry_price).to eq(100.1)
+    expect(executed.adjusted_exit_price).to eq(104.9)
+    expect(executed.fees).to eq(0.1)
+    expect(executed.funding_cost).to eq(0.0)
+    expect(executed.slippage_cost).to eq(0.2)
   end
 
-  it "properly reports winner/loser status" do
-    expect(executed.winner?).to be(true)
-    expect(executed.loser?).to be(false)
-  end
-
-  it "reports loser status when net profit is negative" do
-    losing_executed = described_class.new(
-      original_trade: original_trade,
-      executed_entry_price: 100.1,
-      executed_exit_price: 99.0,
-      slippage_cost: 0.2,
-      fee_cost: 0.1,
-      funding_cost: 0.0,
-      executed_pnl: -1.4
-    )
-    expect(losing_executed.winner?).to be(false)
-    expect(losing_executed.loser?).to be(true)
+  it "calculates execution_pnl correctly" do
+    # gross = (104.9 - 100.1) * 1.0 = 4.8
+    # execution_pnl = 4.8 - 0.1 - 0.0 = 4.7
+    expect(executed.execution_pnl.to_f).to eq(4.7)
   end
 end

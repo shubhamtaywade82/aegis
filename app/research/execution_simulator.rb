@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require "bigdecimal"
 require_relative "../value_objects/executed_trade"
 require_relative "../value_objects/execution_report"
-require_relative "../indicators/atr"
 
 module Research
   class ExecutionSimulator
@@ -13,8 +11,7 @@ module Research
       slippage_model:,
       funding_model:,
       latency_model: nil,
-      candles: nil,
-      interval_seconds: 3600
+      candles: nil
     )
       new(
         trades: trades,
@@ -22,18 +19,9 @@ module Research
         slippage_model: slippage_model,
         funding_model: funding_model,
         latency_model: latency_model,
-        candles: candles,
-        interval_seconds: interval_seconds
+        candles: candles
       ).call
     end
-
-    attr_reader :trades,
-                :fee_model,
-                :slippage_model,
-                :funding_model,
-                :latency_model,
-                :candles,
-                :interval_seconds
 
     def initialize(
       trades:,
@@ -41,8 +29,7 @@ module Research
       slippage_model:,
       funding_model:,
       latency_model: nil,
-      candles: nil,
-      interval_seconds: 3600
+      candles: nil
     )
       @trades = trades
       @fee_model = fee_model
@@ -50,119 +37,84 @@ module Research
       @funding_model = funding_model
       @latency_model = latency_model
       @candles = candles
-      @interval_seconds = interval_seconds
     end
 
     def call
-      executed = trades.map do |trade|
-        simulate_trade(trade)
-      end
+      executed_trades =
+        trades.map do |trade|
+          execute_trade(trade)
+        end
 
-      build_report(executed)
+      build_report(executed_trades)
     end
 
     private
 
-    def simulate_trade(trade)
-      entry_price = BigDecimal(trade.entry_price.to_s)
-      exit_price = BigDecimal(trade.exit_price.to_s)
+    attr_reader :trades,
+                :fee_model,
+                :slippage_model,
+                :funding_model,
+                :latency_model,
+                :candles
+
+    def execute_trade(trade)
+      entry_price = trade.entry_price
+      exit_price = trade.exit_price
 
       if latency_model && candles
         entry_idx = find_candle_index(trade.entry_time)
         exit_idx = find_candle_index(trade.exit_time)
 
         if entry_idx && exit_idx
-          delayed_entry_idx = latency_model.delayed_index(
-            entry_idx,
-            interval_seconds: interval_seconds,
-            max_index: candles.size - 1
-          )
-          delayed_exit_idx = latency_model.delayed_index(
-            exit_idx,
-            interval_seconds: interval_seconds,
-            max_index: candles.size - 1
-          )
+          delayed_entry_idx = latency_model.delayed_index(entry_idx, candles: candles)
+          delayed_exit_idx = latency_model.delayed_index(exit_idx, candles: candles)
 
-          entry_price = BigDecimal(candles[delayed_entry_idx].open.to_s)
-          exit_price = BigDecimal(candles[delayed_exit_idx].close.to_s)
+          entry_price = candles[delayed_entry_idx].open
+          exit_price = candles[delayed_exit_idx].close
         end
       end
 
-      # For ATR-based slippage, calculate ATR
-      atr_at_entry = nil
-      if slippage_model.mode == :atr && candles
-        atr_at_entry = find_atr_at_time(trade.entry_time)
-      end
+      adjusted_entry =
+        slippage_model.apply(
+          price: entry_price,
+          side: entry_side(trade)
+        )
 
-      executed_entry = slippage_model.apply(
-        price: entry_price,
-        side: trade.side,
-        transaction_type: :entry,
-        atr: atr_at_entry
-      )
+      adjusted_exit =
+        slippage_model.apply(
+          price: exit_price,
+          side: exit_side(trade)
+        )
 
-      executed_exit = slippage_model.apply(
-        price: exit_price,
-        side: trade.side,
-        transaction_type: :exit,
-        atr: atr_at_entry
-      )
+      fees =
+        fee_model.fee(
+          entry_notional:
+            adjusted_entry * trade.quantity,
 
-      qty = BigDecimal(trade.quantity.to_s)
-      entry_notional = executed_entry * qty
-      exit_notional = executed_exit * qty
+          exit_notional:
+            adjusted_exit * trade.quantity
+        )
 
-      # Slippage cost calculation
-      original_pnl = calculate_pnl(
-        side: trade.side,
-        entry: entry_price,
-        exit: exit_price,
-        qty: qty
-      )
-      slippage_pnl = calculate_pnl(
-        side: trade.side,
-        entry: executed_entry,
-        exit: executed_exit,
-        qty: qty
-      )
-      slippage_cost = original_pnl - slippage_pnl
+      funding =
+        funding_model.cost(
+          notional:
+            adjusted_entry * trade.quantity
+        )
 
-      # Fee calculation
-      fees = fee_model.calculate(
-        entry_notional: entry_notional,
-        exit_notional: exit_notional
-      )
-
-      # Funding calculation
-      duration = trade.duration_seconds
-      funding = funding_model.cost(
-        notional: entry_notional,
-        duration_seconds: duration
-      )
-
-      # Executed PnL
-      executed_pnl = slippage_pnl - fees - funding
+      slippage =
+        (
+          (adjusted_entry - trade.entry_price).abs +
+          (adjusted_exit - trade.exit_price).abs
+        ) * trade.quantity
 
       ExecutedTrade.new(
-        original_trade: trade,
-        executed_entry_price: executed_entry,
-        executed_exit_price: executed_exit,
-        slippage_cost: slippage_cost,
-        fee_cost: fees,
+        trade: trade,
+        adjusted_entry_price: adjusted_entry,
+        adjusted_exit_price: adjusted_exit,
+        fees: fees,
         funding_cost: funding,
-        executed_pnl: executed_pnl
+        slippage_cost: slippage
       )
-    end
-
-    def calculate_pnl(side:, entry:, exit:, qty:)
-      case side.to_sym
-      when :long
-        (exit - entry) * qty
-      when :short
-        (entry - exit) * qty
-      else
-        raise ArgumentError, "Invalid side: #{side}"
-      end
     end
 
     def find_candle_index(time)
@@ -170,45 +122,58 @@ module Research
       candles.find_index { |c| c.open_time >= time }
     end
 
-    def find_atr_at_time(time)
-      return nil if candles.nil?
-      # Calculate ATR for the candles series
-      atr = Indicators::ATR.calculate(candles: candles, period: 14)
-      idx = find_candle_index(time)
-      idx ? atr[idx] : nil
-    end
-
     def build_report(executed_trades)
-      gross_net_profit = trades.sum(&:pnl)
-      execution_net_profit = executed_trades.sum(&:executed_pnl)
+      research_pnls =
+        executed_trades.map(&:research_pnl)
 
-      fee_impact = executed_trades.sum(&:fee_cost)
-      slippage_impact = executed_trades.sum(&:slippage_cost)
-      funding_impact = executed_trades.sum(&:funding_cost)
-
-      winners = executed_trades.select(&:winner?)
-      losers = executed_trades.select(&:loser?)
-
-      gross_profit = winners.sum(&:executed_pnl)
-      gross_loss = losers.sum { |t| t.executed_pnl.abs }
-
-      execution_pf = if gross_profit.zero? && gross_loss.zero?
-                       0.0
-      elsif gross_loss.zero?
-                       10_000.0
-      else
-                       (gross_profit / gross_loss).round(4)
-      end
+      execution_pnls =
+        executed_trades.map(&:execution_pnl)
 
       ExecutionReport.new(
         executed_trades: executed_trades,
-        gross_net_profit: gross_net_profit,
-        execution_net_profit: execution_net_profit,
-        fee_impact: fee_impact,
-        slippage_impact: slippage_impact,
-        funding_impact: funding_impact,
-        execution_profit_factor: execution_pf
+
+        research_net_profit:
+          research_pnls.sum,
+
+        execution_net_profit:
+          execution_pnls.sum,
+
+        fee_impact:
+          executed_trades.sum(&:fees),
+
+        funding_impact:
+          executed_trades.sum(&:funding_cost),
+
+        slippage_impact:
+          executed_trades.sum(&:slippage_cost),
+
+        research_profit_factor:
+          profit_factor(research_pnls),
+
+        execution_profit_factor:
+          profit_factor(execution_pnls)
       )
+    end
+
+    def profit_factor(pnls)
+      gross_profit =
+        pnls.select(&:positive?).sum
+
+      gross_loss =
+        pnls.select(&:negative?)
+            .sum(&:abs)
+
+      return 10_000.0 if gross_loss.zero?
+
+      gross_profit / gross_loss
+    end
+
+    def entry_side(trade)
+      trade.side == :long ? :buy : :sell
+    end
+
+    def exit_side(trade)
+      trade.side == :long ? :sell : :buy
     end
   end
 end
