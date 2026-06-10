@@ -2,6 +2,21 @@
 
 module Exchanges
   class BaseAdapter
+    def capabilities
+      {
+        market_orders: true,
+        limit_orders: true,
+        stop_market: true,
+        take_profit_market: true,
+        hedge_mode: true,
+        reduce_only: true,
+        websocket_positions: true,
+        websocket_orders: true,
+        funding_rates: true,
+        bracket_orders: false
+      }
+    end
+
     def account
       raise NotImplementedError, "#{self.class.name}#account is not implemented"
     end
