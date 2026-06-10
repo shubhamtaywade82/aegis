@@ -18,8 +18,15 @@ namespace :trading do
 
     # 3. Handle connection callbacks
     websocket_client.on(:connected) do |event|
-      Rails.logger.info "[TradingDaemon] Connected to Binance WebSocket stream successfully."
-      puts "Connected to WebSocket stream!"
+      Rails.logger.info "[TradingDaemon] Connected to Binance WebSocket stream successfully. Subscribing to ETHUSDT & SOLUSDT..."
+      puts "Connected to WebSocket stream! Subscribing to ETHUSDT & SOLUSDT..."
+      
+      subscription_payload = {
+        method: "SUBSCRIBE",
+        params: ["ethusdt@ticker", "solusdt@ticker"],
+        id: 1
+      }
+      websocket_client.send_json(subscription_payload)
     end
 
     websocket_client.on(:message) do |data|
@@ -27,6 +34,8 @@ namespace :trading do
       if data && data["e"] == "24hrTicker"
         symbol = data["s"]
         ltp = data["c"]
+        Rails.logger.info "[TradingDaemon] Ticker tick received - Symbol: #{symbol}, Price: #{ltp}"
+        puts "[TradingDaemon] Ticker tick received - Symbol: #{symbol}, Price: #{ltp}"
         MatchingEngine.process_ticker_tick(symbol, ltp)
       end
     end

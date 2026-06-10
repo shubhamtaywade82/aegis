@@ -61,6 +61,10 @@ module Exchanges
         @callbacks[event.to_sym] = block
       end
 
+      def send_json(payload)
+        @ws&.send(payload.to_json)
+      end
+
       def disconnect
         @ws&.close
         @status = :disconnected

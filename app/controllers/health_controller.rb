@@ -31,7 +31,8 @@ class HealthController < ActionController::API
   private
 
   def database?
-    ActiveRecord::Base.connection.active?
+    ActiveRecord::Base.connection.execute("SELECT 1")
+    true
   rescue StandardError
     false
   end
