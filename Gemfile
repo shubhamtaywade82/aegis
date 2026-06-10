@@ -1,5 +1,7 @@
 source "https://rubygems.org"
 
+ruby "~> 3.4.0"
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.1.3"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
@@ -52,9 +54,39 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "pry"
+  gem "webmock"
+  gem "vcr"
+  gem "simplecov", require: false
+  gem "timecop"
 end
 
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  gem "rubocop", require: false
+  gem "rubocop-rails", require: false
+  gem "rubocop-rspec", require: false
+  gem "bullet"
+  gem "annotaterb"
+  gem "listen"
+end
+
+gem "redis"
+gem "sidekiq"
+gem "faraday"
+gem "faraday-retry"
+gem "oj"
+gem "dotenv-rails"
+gem "parallel"
+gem "connection_pool"
+
+group :test do
+  gem "database_cleaner-active_record"
+  gem "shoulda-matchers"
 end
