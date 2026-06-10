@@ -35,3 +35,19 @@
 
 /node_modules
 .kimchi
+
+# Bundler
+/vendor/bundle
+
+# Coverage
+/coverage
+
+# Redis
+dump.rdb
+
+# IDE
+.vscode
+.idea
+
+# macOS
+.DS_Store
