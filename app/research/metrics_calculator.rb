@@ -23,7 +23,8 @@ module Research
         average_trade: average_trade,
         reward_risk: reward_risk,
         max_drawdown: max_drawdown,
-        equity_curve: equity_curve
+        equity_curve: equity_curve,
+        trades: trades
       )
     end
 
@@ -112,9 +113,9 @@ module Research
       maximum_drawdown = 0.0
 
       equity_curve.each do |equity|
-        peak = [peak, equity].max
+        peak = [ peak, equity ].max
         drawdown = peak - equity
-        maximum_drawdown = [maximum_drawdown, drawdown].max
+        maximum_drawdown = [ maximum_drawdown, drawdown ].max
       end
 
       maximum_drawdown.round(8)

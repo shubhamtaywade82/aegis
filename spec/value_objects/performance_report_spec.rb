@@ -16,7 +16,8 @@ RSpec.describe PerformanceReport do
       average_trade: 2.5,
       reward_risk: 1.0,
       max_drawdown: 5.0,
-      equity_curve: [10.0, 20.0, 30.0, 25.0, 50.0]
+      equity_curve: [ 10.0, 20.0, 30.0, 25.0, 50.0 ],
+      trades: []
     )
   end
 

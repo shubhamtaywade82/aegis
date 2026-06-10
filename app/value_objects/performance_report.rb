@@ -12,7 +12,8 @@ class PerformanceReport
               :average_trade,
               :reward_risk,
               :max_drawdown,
-              :equity_curve
+              :equity_curve,
+              :trades
 
   def initialize(
     total_trades:,
@@ -26,7 +27,8 @@ class PerformanceReport
     average_trade:,
     reward_risk:,
     max_drawdown:,
-    equity_curve:
+    equity_curve:,
+    trades:
   )
     @total_trades  = total_trades
     @wins          = wins
@@ -40,6 +42,7 @@ class PerformanceReport
     @reward_risk   = reward_risk
     @max_drawdown  = max_drawdown
     @equity_curve  = equity_curve.freeze
+    @trades        = trades.freeze
 
     freeze
   end
