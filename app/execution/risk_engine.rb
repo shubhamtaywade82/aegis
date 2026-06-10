@@ -2,6 +2,7 @@
 
 require "bigdecimal"
 require_relative "../value_objects/risk_decision"
+require_relative "portfolio"
 
 module Execution
   class RiskEngine
@@ -36,7 +37,8 @@ module Execution
       max_rest_failures: 5,
       max_ws_outage_seconds: 60,
       max_clock_drift_ms: 500,
-      max_correlated_positions: 2
+      max_correlated_positions: 2,
+      max_exchange_errors: nil
     )
       @max_positions = max_positions
       @max_exposure = BigDecimal(max_exposure.to_s)
@@ -45,7 +47,7 @@ module Execution
       @max_consecutive_losses = max_consecutive_losses
       @cooldown_period_seconds = cooldown_period_seconds
       @max_trades_per_day = max_trades_per_day
-      @max_rest_failures = max_rest_failures
+      @max_rest_failures = max_exchange_errors || max_rest_failures
       @max_ws_outage_seconds = max_ws_outage_seconds
       @max_clock_drift_ms = max_clock_drift_ms
       @max_correlated_positions = max_correlated_positions
@@ -57,18 +59,19 @@ module Execution
 
       # Level 5: Emergency Controls
       if market_context[:kill_switch_active]
-        reasons << "Kill switch active"
+        reasons << "Kill switch active. Trading disabled."
         severity = :critical
       end
 
       if market_context[:panic_flatten_active]
-        reasons << "Panic flatten active"
+        reasons << "Panic flatten active. Trading disabled."
         severity = :critical
       end
 
       # Level 4: Infrastructure Risk
-      if (market_context[:rest_failures] || 0) >= max_rest_failures
-        reasons << "REST failure limit exceeded"
+      rest_errs = market_context[:rest_failures] || 0
+      if rest_errs >= max_rest_failures
+        reasons << "Execution circuit breaker active: REST failures (#{rest_errs}) >= limit (#{max_rest_failures})"
         severity = :critical
       end
 
@@ -90,9 +93,14 @@ module Execution
 
       # Level 3: Daily Risk
       daily_loss = BigDecimal((market_context[:daily_loss] || 0.0).to_s)
-      daily_loss_limit_val = portfolio.equity * daily_loss_limit
+      daily_loss_limit_val = if daily_loss_limit <= BigDecimal("1.0")
+                               portfolio.equity * daily_loss_limit
+      else
+                               daily_loss_limit
+      end
+
       if daily_loss >= daily_loss_limit_val
-        reasons << "Daily loss limit exceeded"
+        reasons << "Daily loss limit exceeded: Daily loss (#{daily_loss.to_f}) >= limit (#{daily_loss_limit_val.to_f})"
         severity = :critical
       end
 
@@ -101,7 +109,8 @@ module Execution
       if consecutive_losses >= max_consecutive_losses && last_loss_time
         elapsed = Time.now - last_loss_time
         if elapsed < cooldown_period_seconds
-          reasons << "Risk cooldown active"
+          remaining = (cooldown_period_seconds - elapsed).round
+          reasons << "Risk cooldown active: #{consecutive_losses} consecutive losses. Cooldown remaining: #{remaining}s"
           severity = [ severity, :high ].max_by { |s| severity_priority(s) }
         end
       end
@@ -117,7 +126,7 @@ module Execution
         # Position count limit
         has_pos = portfolio.positions.key?(order_request.symbol)
         if !has_pos && portfolio.positions.size >= max_positions
-          reasons << "Position count limit exceeded"
+          reasons << "Position count limit exceeded: Active positions (#{portfolio.positions.size}) >= limit (#{max_positions})"
           severity = [ severity, :high ].max_by { |s| severity_priority(s) }
         end
 
@@ -132,10 +141,14 @@ module Execution
         order_price = order_request.price || market_context[:mark_price] || BigDecimal("0.0")
         order_exposure = order_request.quantity * order_price
         potential_exposure = current_exposure + order_exposure
-        max_exposure_value = portfolio.equity * max_exposure
+        max_exposure_value = if max_exposure <= BigDecimal("1.0")
+                               portfolio.equity * max_exposure
+        else
+                               max_exposure
+        end
 
         if potential_exposure > max_exposure_value
-          reasons << "Exposure limit exceeded"
+          reasons << "Exposure limit exceeded: Potential exposure (#{potential_exposure.to_f}) > limit (#{max_exposure_value.to_f})"
           severity = [ severity, :high ].max_by { |s| severity_priority(s) }
         end
 
