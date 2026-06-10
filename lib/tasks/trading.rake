@@ -3,6 +3,9 @@
 namespace :trading do
   desc "Starts the live autonomous trading bot daemon"
   task start: :environment do
+    # Eagerly load the exchanges namespace
+    Dir[Rails.root.join("app/exchanges/**/*.rb")].each { |f| require f }
+
     Rails.logger.info "[TradingDaemon] Starting autonomous trading bot daemon..."
     puts "Starting autonomous trading daemon..."
 

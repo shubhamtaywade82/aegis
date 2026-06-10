@@ -3,7 +3,7 @@
 require "json"
 require "faraday"
 
-module Ai
+module AI
   class ProviderRouter
     attr_reader :provider, :model, :endpoint
 

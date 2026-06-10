@@ -5,8 +5,8 @@ require_relative "../../app/ai/provider_router"
 require_relative "../../app/ai/validator"
 require_relative "../../app/value_objects/order_request"
 
-RSpec.describe Ai::Validator do
-  let(:router) { Ai::ProviderRouter.new(provider: :simulated) }
+RSpec.describe AI::Validator do
+  let(:router) { AI::ProviderRouter.new(provider: :simulated) }
   let(:validator) { described_class.new(provider_router: router) }
   let(:order_request) do
     OrderRequest.new(

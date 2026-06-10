@@ -3,7 +3,7 @@
 require "rails_helper"
 require_relative "../../app/ai/provider_router"
 
-RSpec.describe Ai::ProviderRouter do
+RSpec.describe AI::ProviderRouter do
   let(:router) { described_class.new(provider: :simulated) }
 
   it "returns simulated response in testing mode" do

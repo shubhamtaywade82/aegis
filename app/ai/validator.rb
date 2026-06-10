@@ -2,7 +2,7 @@
 
 require "json"
 
-module Ai
+module AI
   class Validator
     def initialize(provider_router:)
       @router = provider_router
