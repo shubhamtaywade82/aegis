@@ -21,6 +21,11 @@ RSpec.describe Execution::ExecutionEngine do
   end
 
   describe "#execute" do
+    before do
+      # Ensure price is available for SOLUSDT (PaperEngine no longer has mock fallback)
+      adapter.set_price("SOLUSDT", BigDecimal("100.0"))
+    end
+
     it "successfully executes an order if risk check passes" do
       response = engine.execute(order_request)
       expect(response).to be_a(OrderResponse)

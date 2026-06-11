@@ -31,7 +31,7 @@ module Execution
     end
 
     def latest_price(symbol)
-      @prices[symbol] || BigDecimal("100.0")
+      @prices[symbol]
     end
 
     def account
@@ -51,7 +51,8 @@ module Execution
     end
 
     def place_order(order_request)
-      price = order_request.price || @prices[order_request.symbol] || BigDecimal("100.0")
+      price = order_request.price || @prices[order_request.symbol]
+      raise ArgumentError, "No price available for #{order_request.symbol}. Ensure market data feed is running." unless price
 
       fee_rate = BigDecimal("0.0005")
       notional = order_request.quantity * price

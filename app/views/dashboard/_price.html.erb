@@ -1,0 +1,56 @@
+<turbo-frame id="price-card-<%= @symbol %>">
+  <% if tick %>
+    <%
+      price = tick["c"].to_s
+      change_pct = tick["P"].to_f
+      is_positive = change_pct >= 0
+      change_color = is_positive ? "text-green-400" : "text-red-400"
+      change_bg = is_positive ? "bg-green-900/30" : "bg-red-900/30"
+    %>
+    <div id="price-card-<%= @symbol %>">
+      <!-- Current Price -->
+      <div class="text-4xl font-bold text-white mb-2">
+        <%= number_to_currency(price.to_f, precision: 2) %>
+      </div>
+
+      <!-- 24h Change -->
+      <div class="flex items-center gap-2 mb-4">
+        <span class="<%= change_color %> text-lg font-semibold">
+          <%= is_positive ? "+" : "" %><%= change_pct.round(2) %> %
+        </span>
+        <span class="<%= change_bg %> <%= change_color %> text-xs font-medium px-2 py-1 rounded">
+          24h
+        </span>
+      </div>
+
+      <!-- High / Low -->
+      <div class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span class="text-gray-500 block">24h High</span>
+          <span class="text-white font-medium"><%= number_to_currency(tick["h"].to_f, precision: 2) %></span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">24h Low</span>
+          <span class="text-white font-medium"><%= number_to_currency(tick["l"].to_f, precision: 2) %></span>
+        </div>
+      </div>
+
+      <!-- Volume -->
+      <div class="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span class="text-gray-500 block">Volume</span>
+          <span class="text-white font-medium"><%= tick["v"].to_f.round(4) %></span>
+        </div>
+        <div>
+          <span class="text-gray-500 block">Quote Volume</span>
+          <span class="text-white font-medium"><%= number_to_currency(tick["q"].to_f, precision: 2) %></span>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div id="price-card-<%= @symbol %>" class="text-gray-500 text-center py-8">
+      <p>No price data available for <%= @symbol %></p>
+      <p class="text-sm mt-1">Stream may be disconnected</p>
+    </div>
+  <% end %>
+</turbo-frame>
