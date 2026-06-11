@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/portfolio/growth_scaler"
 
 RSpec.describe Portfolio::GrowthScaler do
   let(:scaler) { described_class.new(base_risk_pct: 0.005) }

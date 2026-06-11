@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/backtest_runner"
 require_relative "../support/fixture_loader"
 require "yaml"
 

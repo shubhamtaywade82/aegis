@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/risk_engine"
-require_relative "../../app/value_objects/order_request"
-require_relative "../../app/value_objects/position_snapshot"
-require_relative "../../app/execution/portfolio"
 
 RSpec.describe Execution::RiskEngine do
   let(:engine) do

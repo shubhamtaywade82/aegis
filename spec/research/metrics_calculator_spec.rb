@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/metrics_calculator"
 
 RSpec.describe Research::MetricsCalculator do
   def build_trade(pnl)

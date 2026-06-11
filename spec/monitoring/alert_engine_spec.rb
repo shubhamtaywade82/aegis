@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/monitoring/alert_engine"
-require_relative "../../app/monitoring/metrics_registry"
-require_relative "../../app/notifiers/telegram_notifier"
 
 RSpec.describe Monitoring::AlertEngine do
   let(:notifier) { Notifiers::TelegramNotifier.new }

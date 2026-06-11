@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/execution_engine"
-require_relative "../../app/execution/risk_engine"
-require_relative "../../app/execution/paper_engine"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.describe Execution::ExecutionEngine do
   let(:adapter) { Execution::PaperEngine.new }

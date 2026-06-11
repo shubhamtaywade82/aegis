@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/stable_region_selector"
-require_relative "../../app/value_objects/stable_region"
 
 RSpec.describe Research::StableRegionSelector do
   describe ".call" do

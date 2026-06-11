@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/paper_engine"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.describe Execution::PaperEngine do
   subject(:engine) { described_class.new(initial_balance: 10_000.0) }

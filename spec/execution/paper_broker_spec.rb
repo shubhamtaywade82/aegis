@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/paper_broker"
-require_relative "../../app/execution/portfolio"
-require_relative "../../app/execution/event_store"
-require_relative "../../app/value_objects/slippage_model"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.describe Execution::PaperBroker do
   let(:portfolio) { Execution::Portfolio.new(cash_balance: 10_000.0) }

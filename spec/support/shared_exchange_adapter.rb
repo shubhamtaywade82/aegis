@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.shared_examples "exchange adapter" do
   let(:order_request) do

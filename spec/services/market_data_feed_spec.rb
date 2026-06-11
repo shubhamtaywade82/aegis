@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/services/market_data_feed"
-require_relative "../../app/services/binance_stream_parser"
 
 RSpec.describe MarketDataFeed do
   let(:redis) { instance_double(Redis) }

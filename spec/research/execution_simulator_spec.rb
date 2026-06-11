@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/execution_simulator"
-require_relative "../../app/value_objects/fee_model"
-require_relative "../../app/value_objects/slippage_model"
-require_relative "../../app/value_objects/funding_model"
 
 RSpec.describe Research::ExecutionSimulator do
   let(:trade) do

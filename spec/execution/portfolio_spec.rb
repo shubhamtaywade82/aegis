@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/portfolio"
 
 RSpec.describe Execution::Portfolio do
   subject(:portfolio) { described_class.new(cash_balance: 10_000.0, leverage: 10) }

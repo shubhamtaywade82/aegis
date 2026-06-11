@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/value_objects/execution_report"
 
 RSpec.describe ExecutionReport do
   subject(:report) do

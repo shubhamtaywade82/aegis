@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/portfolio/rebalance_engine"
-require_relative "../../app/value_objects/portfolio_snapshot"
-require_relative "../../app/value_objects/position_snapshot"
 
 RSpec.describe Portfolio::RebalanceEngine do
   let(:engine) { described_class.new }

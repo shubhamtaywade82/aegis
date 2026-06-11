@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/live/divergence_monitor"
 
 RSpec.describe Live::DivergenceMonitor do
   let(:monitor) { described_class.new }

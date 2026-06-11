@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/portfolio/drift_detector"
 
 RSpec.describe Portfolio::DriftDetector do
   let(:detector) { described_class.new }

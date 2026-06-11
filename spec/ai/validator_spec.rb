@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/ai/provider_router"
-require_relative "../../app/ai/validator"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.describe AI::Validator do
   let(:router) { AI::ProviderRouter.new(provider: :simulated) }

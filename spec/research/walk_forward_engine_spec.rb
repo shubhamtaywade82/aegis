@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/walk_forward_engine"
 require_relative "../support/fixture_paths"
 require_relative "../support/fixture_loader"
 

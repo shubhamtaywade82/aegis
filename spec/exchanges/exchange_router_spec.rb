@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/exchanges/exchange_router"
-require_relative "../../app/exchanges/symbol_registry"
-require_relative "../../app/exchanges/precision_registry"
-require_relative "../../app/exchanges/coindcx/adapter"
-require_relative "../../app/exchanges/delta/adapter"
 
 RSpec.describe "Multi-Exchange Architecture" do
   let(:coindcx_adapter) { Exchanges::CoinDCX::Adapter.new }

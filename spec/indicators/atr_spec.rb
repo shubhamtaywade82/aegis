@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/indicators/atr"
 
 RSpec.describe Indicators::ATR do
   it "calculates atr" do

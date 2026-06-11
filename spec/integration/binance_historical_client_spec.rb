@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/services/binance/historical_client"
 
 RSpec.describe Binance::HistoricalClient, :integration do
   subject(:client) do

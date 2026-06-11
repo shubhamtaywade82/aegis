@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/execution/matching_engine"
-require_relative "../../app/value_objects/order_request"
-require_relative "../../app/value_objects/slippage_model"
 
 RSpec.describe Execution::MatchingEngine do
   let(:candle) do

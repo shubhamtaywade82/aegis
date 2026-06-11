@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/live/deployment_manager"
-require_relative "../../app/value_objects/order_request"
 
 RSpec.describe Live::DeploymentManager do
   let(:order_request) do

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/live/rollout_manager"
 
 RSpec.describe Live::RolloutManager do
   let(:manager) { described_class.new(stage: :canary) }

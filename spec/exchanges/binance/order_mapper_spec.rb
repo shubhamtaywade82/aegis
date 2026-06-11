@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../../app/exchanges/binance/order_mapper"
-require_relative "../../../app/value_objects/order_request"
 
 RSpec.describe Exchanges::Binance::OrderMapper do
   describe ".to_binance" do

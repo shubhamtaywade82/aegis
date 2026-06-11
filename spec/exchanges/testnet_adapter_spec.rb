@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/exchanges/binance/testnet_adapter"
 
 RSpec.describe Exchanges::Binance::TestnetAdapter do
   let(:adapter) do

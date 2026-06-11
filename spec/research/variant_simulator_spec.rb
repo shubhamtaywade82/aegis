@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/research/variant_simulator"
 
 RSpec.describe Research::VariantSimulator do
   SupertrendResult = Indicators::Supertrend::Result

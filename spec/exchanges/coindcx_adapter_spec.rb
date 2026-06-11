@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/exchanges/coindcx/adapter"
 require_relative "../support/shared_exchange_adapter"
 
 RSpec.describe Exchanges::CoinDCX::Adapter do

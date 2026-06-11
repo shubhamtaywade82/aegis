@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/monitoring/dashboard_service"
-require_relative "../../app/monitoring/metrics_registry"
-require_relative "../../app/execution/portfolio"
 
 RSpec.describe Monitoring::DashboardService do
   let(:registry) { Monitoring::MetricsRegistry.new }

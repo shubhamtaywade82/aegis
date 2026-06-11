@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/portfolio/allocation_engine"
-require_relative "../../app/value_objects/portfolio_snapshot"
 
 RSpec.describe "Correlation Overlay" do
   let(:engine) { Portfolio::AllocationEngine.new }

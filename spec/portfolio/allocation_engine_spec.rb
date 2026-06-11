@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/portfolio/allocation_engine"
-require_relative "../../app/value_objects/portfolio_snapshot"
 
 RSpec.describe Portfolio::AllocationEngine do
   let(:engine) { described_class.new(max_instrument_weight: 0.8, max_exchange_weight: 1.0) }

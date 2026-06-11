@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/soak/soak_coordinator"
 
 RSpec.describe Soak::SoakCoordinator do
   let(:coordinator) { described_class.new }

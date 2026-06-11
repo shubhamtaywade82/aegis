@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/capital/capital_engine"
-require_relative "../../app/value_objects/wallet_snapshot"
 
 RSpec.describe Capital::CapitalEngine do
   let(:engine) { described_class.new(exchange_budgets: { binance: 0.60 }, base_risk_pct: 0.005) }

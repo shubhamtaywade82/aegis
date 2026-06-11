@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/capital/margin_reservation_manager"
 
 RSpec.describe Capital::MarginReservationManager do
   let(:manager) { described_class.new }

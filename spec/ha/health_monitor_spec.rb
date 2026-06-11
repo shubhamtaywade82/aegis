@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/ha/health_monitor"
 
 RSpec.describe Ha::HealthMonitor do
   let(:election) { double }

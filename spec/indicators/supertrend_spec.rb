@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/indicators/atr"
-require_relative "../../app/indicators/supertrend"
 
 RSpec.describe Indicators::Supertrend do
   it "calculates supertrend" do

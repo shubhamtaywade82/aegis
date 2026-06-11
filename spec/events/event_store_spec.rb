@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/events/event"
-require_relative "../../app/events/event_store"
-require_relative "../../app/events/event_bus"
 
 RSpec.describe Events::EventStore do
   let(:store) { described_class.new }

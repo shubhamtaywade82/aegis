@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/value_objects/executed_trade"
 
 RSpec.describe ExecutedTrade do
   let(:original_trade) do

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/notifiers/telegram_notifier"
 
 RSpec.describe Notifiers::TelegramNotifier do
   let(:notifier) { described_class.new(token: "test", chat_id: "123") }

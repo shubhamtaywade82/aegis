@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/ha/leader_election"
 
 RSpec.describe Ha::LeaderElection do
   let(:redis_mock) { double }

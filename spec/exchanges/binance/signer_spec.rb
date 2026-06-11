@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../../app/exchanges/binance/signer"
 
 RSpec.describe Exchanges::Binance::Signer do
   describe ".sign" do

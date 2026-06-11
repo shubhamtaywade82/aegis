@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "json"
-require_relative "../../app/value_objects/candle"
-require_relative "../../app/research/candle_series"
 
 module FixtureLoader
   module_function

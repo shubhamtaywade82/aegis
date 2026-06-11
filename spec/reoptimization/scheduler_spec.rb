@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/reoptimization/scheduler"
 
 RSpec.describe Reoptimization::Scheduler do
   let(:active_model) do

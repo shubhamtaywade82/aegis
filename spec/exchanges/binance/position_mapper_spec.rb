@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../../app/exchanges/binance/position_mapper"
 
 RSpec.describe Exchanges::Binance::PositionMapper do
   describe ".from_binance" do

@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-require_relative "../../app/ha/reconciliation_service"
-require_relative "../../app/exchanges/base_adapter"
-require_relative "../../app/execution/portfolio"
 
 RSpec.describe Ha::ReconciliationService do
   let(:adapter) { double }
