@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require "faraday"
-require_relative "../../settings/binance_settings"
-require_relative "../../errors/binance_error"
-require_relative "../shared/json_parser"
 
 module Binance
   class HistoricalClient

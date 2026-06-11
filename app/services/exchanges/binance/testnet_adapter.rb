@@ -4,11 +4,6 @@ require "openssl"
 require "faraday"
 require "json"
 require "bigdecimal"
-require_relative "../base_adapter"
-require_relative "../../settings/binance_settings"
-require_relative "../../value_objects/position_snapshot"
-require_relative "../../value_objects/order_response"
-require_relative "../../errors/external_service_error"
 
 module Exchanges
   module Binance

@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../../value_objects/order_request"
-require_relative "../../value_objects/order_response"
 
 module Exchanges
   module Binance

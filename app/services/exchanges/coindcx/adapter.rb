@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../base_adapter"
-require_relative "rest_client"
-require_relative "../symbol_registry"
-require_relative "../precision_registry"
-require_relative "../../value_objects/order_response"
-require_relative "../../value_objects/position_snapshot"
 require "bigdecimal"
 require "securerandom"
 

@@ -2,8 +2,6 @@
 
 require "redis"
 require "json"
-require_relative "../value_objects/candle"
-require_relative "binance_stream_parser"
 
 class MarketDataFeed
   STREAM_BASE_URL = "wss://fstream.binance.com/stream".freeze

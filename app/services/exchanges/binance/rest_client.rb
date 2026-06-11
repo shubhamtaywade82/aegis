@@ -2,9 +2,6 @@
 
 require "faraday"
 require "json"
-require_relative "client"
-require_relative "signer"
-require_relative "../../errors/external_service_error"
 
 module Exchanges
   module Binance

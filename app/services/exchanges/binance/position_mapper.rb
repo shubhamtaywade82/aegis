@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../../value_objects/position_snapshot"
 
 module Exchanges
   module Binance
