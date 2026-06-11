@@ -7,11 +7,6 @@ class DashboardController < ApplicationController
     @latest_kline = MarketDataFeed.latest_kline(@symbol)
     @supertrend = RealtimeSupertrend.latest_for(@symbol)
 
-    if @supertrend.nil?
-      RealtimeSupertrend.calculate_for(@symbol)
-      @supertrend = RealtimeSupertrend.latest_for(@symbol)
-    end
-
     # Find or create a default user and wallet for development/paper trading
     user = User.first_or_create!(email: "default@aegis.com")
     wallet = user.wallets.find_or_create_by!(currency: "USDT", balance_type: "FUTURES_COLLATERAL") do |w|

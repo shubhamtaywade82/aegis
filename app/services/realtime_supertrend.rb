@@ -36,10 +36,19 @@ class RealtimeSupertrend
 
   private_class_method def self.fetch_candles(symbol)
     klines_json = redis.lrange("trading:klines:#{symbol}:history", 0, 29)
-    klines_json.map { |json| parse_kline(JSON.parse(json)) }.reverse
+    klines_json.map do |item|
+      begin
+        parsed = item.is_a?(String) ? JSON.parse(item) : item
+        parse_kline(parsed)
+      rescue => e
+        nil
+      end
+    end.compact.reverse
   end
 
   private_class_method def self.parse_kline(k)
+    return nil unless k.is_a?(Hash)
+
     open_time = k["open_time"] || k["t"]
     open = k["open"] || k["o"]
     high = k["high"] || k["h"]
@@ -47,6 +56,8 @@ class RealtimeSupertrend
     close = k["close"] || k["c"]
     volume = k["volume"] || k["v"]
     close_time = k["close_time"] || (open_time ? open_time + 59_999 : nil)
+
+    return nil if open.nil? || high.nil? || low.nil? || close.nil?
 
     Candle.new(
       open_time: open_time,

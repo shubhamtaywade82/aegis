@@ -4,6 +4,9 @@ require "rails_helper"
 
 RSpec.describe DashboardController, type: :request do
   describe "GET /dashboard" do
+    before do
+      allow(RealtimeSupertrend).to receive(:latest_for).and_return(nil)
+    end
     context "without symbol param" do
       it "returns a successful 200 response" do
         get "/dashboard"
