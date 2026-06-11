@@ -59,7 +59,7 @@ module Exchanges
       # Reconnects with exponential backoff.
       # @param max_attempts [Integer] Maximum number of reconnection attempts (default 5)
       def reconnect_with_backoff(max_attempts: 5)
-        delays = [2, 4, 8, 16, 32].take(max_attempts - 1)
+        delays = [ 2, 4, 8, 16, 32 ].take(max_attempts - 1)
 
         # First attempt has no delay
         begin

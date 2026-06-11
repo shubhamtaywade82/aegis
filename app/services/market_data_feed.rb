@@ -125,7 +125,7 @@ end
     # @return [String] Combined stream URL
     def build_combined_stream_url
       streams = symbols.flat_map do |symbol|
-        ["#{symbol.downcase}@ticker", "#{symbol.downcase}@kline_1m"]
+        [ "#{symbol.downcase}@ticker", "#{symbol.downcase}@kline_1m" ]
       end.join("/")
 
       "#{STREAM_BASE_URL}?streams=#{streams}"
@@ -281,4 +281,4 @@ end
       # Turbo::StreamsChannel not available (e.g., in test without turbo-rails)
       Rails.logger.debug "Turbo::StreamsChannel not available for broadcast"
     end
-  end
+end

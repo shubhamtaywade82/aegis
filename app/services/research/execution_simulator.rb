@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../value_objects/executed_trade"
-require_relative "../value_objects/execution_report"
 
 module Research
   class ExecutionSimulator

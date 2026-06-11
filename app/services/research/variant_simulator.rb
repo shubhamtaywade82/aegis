@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../value_objects/trade"
-require_relative "../errors/research_error"
 
 module Research
   class VariantSimulator

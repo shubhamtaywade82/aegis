@@ -82,7 +82,7 @@ RSpec.describe MarketDataFeed do
       kline2 = { "t" => 1_234_566_000, "c" => "96800.00" }.to_json
       allow(redis).to receive(:lrange)
         .with("trading:klines:BTCUSDT:history", 0, 29)
-        .and_return([kline2, kline1])
+        .and_return([ kline2, kline1 ])
 
       result = feed.closed_klines("BTCUSDT", count: 30)
       expect(result.size).to eq(2)

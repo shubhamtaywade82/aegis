@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../value_objects/wallet_snapshot"
-require_relative "../portfolio/growth_scaler"
 
 module Capital
   class CapitalEngine

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "backtest_runner"
-require_relative "../value_objects/optimization_result"
 
 module Research
   class Optimizer

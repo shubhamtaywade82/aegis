@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "feature_flags"
-require_relative "rollout_manager"
-require_relative "approval_engine"
-require_relative "divergence_monitor"
 
 module Live
   class DeploymentManager

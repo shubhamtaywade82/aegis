@@ -2,9 +2,6 @@
 
 require "securerandom"
 require "bigdecimal"
-require_relative "../exchanges/base_adapter"
-require_relative "../value_objects/position_snapshot"
-require_relative "../value_objects/order_response"
 
 module Execution
   class PaperEngine < Exchanges::BaseAdapter

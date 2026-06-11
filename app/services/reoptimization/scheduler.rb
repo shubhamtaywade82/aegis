@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../models/trading_model"
 
 module Reoptimization
   class Scheduler

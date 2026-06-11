@@ -16,7 +16,7 @@ class CreateAutonomousTradingTables < ActiveRecord::Migration[8.1]
       t.decimal :locked_balance, precision: 28, scale: 8, null: false, default: 0.0
       t.timestamps
     end
-    add_index :wallets, [:user_id, :currency, :balance_type], unique: true, name: 'unique_user_currency_type'
+    add_index :wallets, [ :user_id, :currency, :balance_type ], unique: true, name: 'unique_user_currency_type'
 
     # 3. Double-entry immutable Ledger Entries
     create_table :ledger_entries do |t|

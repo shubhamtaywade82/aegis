@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../value_objects/allocation_target"
 
 module Portfolio
   class AllocationEngine

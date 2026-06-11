@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../value_objects/position_snapshot"
-require_relative "../value_objects/closed_trade"
 
 module Execution
   class Portfolio

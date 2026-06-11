@@ -37,4 +37,4 @@ class BinanceStreamParser
 
       stream.split("@").first&.upcase
     end
-  end
+end

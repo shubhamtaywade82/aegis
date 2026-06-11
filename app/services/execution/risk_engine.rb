@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "../value_objects/risk_decision"
-require_relative "portfolio"
 
 module Execution
   class RiskEngine

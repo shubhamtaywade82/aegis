@@ -1,10 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "candle_series"
-require_relative "../indicators/atr"
-require_relative "../indicators/supertrend"
-require_relative "variant_simulator"
-require_relative "metrics_calculator"
 
 module Research
   module BacktestRunner

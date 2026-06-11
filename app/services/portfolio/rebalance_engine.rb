@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "bigdecimal"
-require_relative "drift_detector"
 
 module Portfolio
   class RebalanceEngine

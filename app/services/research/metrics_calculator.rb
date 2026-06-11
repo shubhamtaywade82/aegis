@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "../value_objects/performance_report"
 
 module Research
   class MetricsCalculator

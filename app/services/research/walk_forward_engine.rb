@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "optimizer"
-require_relative "stable_region_selector"
-require_relative "backtest_runner"
-require_relative "../value_objects/walk_forward_iteration"
-require_relative "../value_objects/walk_forward_report"
-require_relative "../value_objects/stable_region"
 
 module Research
   class WalkForwardEngine

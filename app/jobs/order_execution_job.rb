@@ -5,7 +5,7 @@ class OrderExecutionJob < ApplicationJob
 
   def perform(client_order_id, execution_price_str)
     price = BigDecimal(execution_price_str)
-    
+
     order = Order.find_by!(client_order_id: client_order_id)
     return if order.status == "FILLED"
 

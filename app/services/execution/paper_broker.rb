@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require_relative "matching_engine"
-require_relative "portfolio"
-require_relative "event_store"
-require_relative "../value_objects/order_request"
-require_relative "../value_objects/order_response"
-require_relative "../value_objects/fill"
 
 module Execution
   class PaperBroker
