@@ -1,5 +1,5 @@
 <turbo-frame id="account-card">
-  <div id="account-card">
+  <div id="account-card" class="flex flex-col gap-3.5">
     <%
       # Handle both Hash and OpenStruct-like account objects
       if account.is_a?(Hash)
@@ -18,46 +18,63 @@
         leverage = account.leverage.to_i
       end
 
-      pnl_color = unrealized >= 0 ? "text-green-400" : "text-red-400"
-      pnl_prefix = unrealized >= 0 ? "+" : ""
+      is_positive = unrealized >= 0
+      pnl_color = is_positive ? "text-emerald-400 neon-text-green" : "text-rose-400 neon-text-red"
+      pnl_bg = is_positive ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"
+      pnl_prefix = is_positive ? "+" : ""
+
+      # Calculate margin percentage safely
+      total_margin = used_margin + available
+      margin_pct = total_margin > 0 ? (used_margin / total_margin * 100).round(1) : 0.0
     %>
 
     <!-- Balance & Equity Row -->
-    <div class="grid grid-cols-2 gap-6 mb-6">
-      <div>
-        <span class="text-gray-500 text-sm block mb-1">Cash Balance</span>
-        <span class="text-2xl font-bold text-white"><%= number_to_currency(balance, precision: 2) %></span>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-white/[0.01] border border-white/5 rounded-2xl p-4">
+        <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Cash Balance</span>
+        <span class="text-3xl font-extrabold text-white tracking-tight"><%= number_to_currency(balance, precision: 2) %></span>
       </div>
-      <div>
-        <span class="text-gray-500 text-sm block mb-1">Equity</span>
-        <span class="text-2xl font-bold text-white"><%= number_to_currency(equity, precision: 2) %></span>
+      <div class="bg-white/[0.01] border border-white/5 rounded-2xl p-4">
+        <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">Equity Value</span>
+        <span class="text-3xl font-extrabold text-white tracking-tight"><%= number_to_currency(equity, precision: 2) %></span>
       </div>
     </div>
 
-    <!-- Margin Row -->
-    <div class="grid grid-cols-3 gap-4 mb-6 pt-4 border-t border-gray-700">
-      <div>
-        <span class="text-gray-500 text-xs block">Used Margin</span>
-        <span class="text-white font-semibold"><%= number_to_currency(used_margin, precision: 2) %></span>
+    <!-- Margin Progress Bar -->
+    <div class="flex flex-col gap-2 bg-white/[0.01] border border-white/5 rounded-2xl p-4">
+      <div class="flex justify-between items-center text-xs font-bold uppercase tracking-wider">
+        <span class="text-gray-500">Margin Utilization</span>
+        <span class="text-cyan-400"><%= margin_pct %>% Used</span>
       </div>
-      <div>
-        <span class="text-gray-500 text-xs block">Available</span>
-        <span class="text-white font-semibold"><%= number_to_currency(available, precision: 2) %></span>
-      </div>
-      <div>
-        <span class="text-gray-500 text-xs block">Leverage</span>
-        <span class="text-white font-semibold"><%= leverage %>x</span>
+      <div class="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden">
+        <div class="bg-gradient-to-r from-cyan-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500" style="width: <%= [margin_pct, 100].min %>%;"></div>
       </div>
     </div>
+
+    <!-- Margin Details & Leverage -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-slate-900/50 border border-white/5 rounded-xl p-3.5 text-center">
+        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Used Margin</span>
+        <span class="text-sm font-semibold text-gray-300"><%= number_to_currency(used_margin, precision: 2) %></span>
+      </div>
+      <div class="bg-slate-900/50 border border-white/5 rounded-xl p-3.5 text-center">
+        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Available</span>
+        <span class="text-sm font-semibold text-gray-300"><%= number_to_currency(available, precision: 2) %></span>
+      </div>
+      <div class="bg-slate-900/50 border border-white/5 rounded-xl p-3.5 text-center">
+        <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1">Leverage</span>
+        <span class="text-sm font-black text-cyan-400"><%= leverage %>x</span>
+      </div>
+    </div>
+
+    <div class="h-px bg-white/5 w-full"></div>
 
     <!-- Unrealized PnL -->
-    <div class="pt-4 border-t border-gray-700">
-      <div class="flex items-center justify-between">
-        <span class="text-gray-500 text-sm">Unrealized PnL</span>
-        <span class="text-xl font-bold <%= pnl_color %>">
-          <%= pnl_prefix %><%= number_to_currency(unrealized, precision: 2) %>
-        </span>
-      </div>
+    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl border <%= pnl_bg %> transition-all duration-300">
+      <span class="text-xs text-gray-400 font-extrabold uppercase tracking-wider">Unrealized Profit & Loss</span>
+      <span class="text-2xl font-black tracking-tight <%= pnl_color %>">
+        <%= pnl_prefix %><%= number_to_currency(unrealized, precision: 2) %>
+      </span>
     </div>
   </div>
 </turbo-frame>

@@ -1,58 +1,96 @@
 <turbo-frame id="dashboard-frame">
-  <div class="min-h-screen bg-gray-900 text-white p-6">
-    <!-- Header with Symbol Selector -->
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold text-white">Aegis Trading Dashboard</h1>
-      <div data-controller="symbol-selector">
-        <select
-          id="symbol-select"
-          name="symbol"
-          data-action="change->symbol-selector#change"
-          class="bg-gray-800 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-48 p-2"
-        >
-          <% %w[BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT ADAUSDT DOGEUSDT].each do |sym| %>
-            <option value="<%= sym %>" <%= "selected" if @symbol == sym %>><%= sym %></option>
-          <% end %>
-        </select>
+  <div class="relative h-screen bg-[#070b13] text-gray-100 p-6 flex flex-col overflow-hidden">
+    <!-- Ambient Background Glows -->
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-cyan-500/10 blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/10 blur-[150px] pointer-events-none"></div>
+
+    <!-- Header Section -->
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 border-b border-white/5 pb-4 flex-none">
+      <div>
+        <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white via-gray-100 to-gray-500 bg-clip-text text-transparent">
+          AEGIS <span class="text-cyan-400 font-light text-xl ml-1">TERMINAL</span>
+        </h1>
+        <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider font-semibold">Autonomous Paper Trading Dashboard</p>
+      </div>
+
+      <!-- Symbol Selector -->
+      <div data-controller="symbol-selector" class="flex items-center gap-3">
+        <label for="symbol-select" class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Symbol</label>
+        <div class="relative">
+          <select
+            id="symbol-select"
+            name="symbol"
+            data-action="change->symbol-selector#change"
+            class="appearance-none bg-slate-900/90 border border-white/10 hover:border-cyan-400/50 text-cyan-400 text-xs font-semibold rounded-lg block w-40 px-3 py-2 pr-7 transition-all duration-300 cursor-pointer shadow-lg focus:outline-none focus:ring-1 focus:ring-cyan-400/50"
+          >
+            <% %w[BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT ADAUSDT DOGEUSDT].each do |sym| %>
+              <option value="<%= sym %>" <%= "selected" if @symbol == sym %> class="bg-[#0b0f19] text-gray-200 font-medium"><%= sym %></option>
+            <% end %>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-cyan-400/70">
+            <svg class="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Real-time Stream Indicator -->
-    <div class="flex items-center gap-2 mb-6">
-      <span class="relative flex h-3 w-3">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+    <!-- Live Status Indicator -->
+    <div class="relative z-10 flex items-center gap-2 mb-4 bg-cyan-950/20 border border-cyan-500/10 w-fit px-3.5 py-1.5 rounded-full shadow-inner shadow-cyan-900/10 flex-none">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-400"></span>
       </span>
-      <span class="text-sm text-gray-400">Live &mdash; <%= @symbol %></span>
+      <span class="text-[10px] font-bold tracking-widest text-cyan-300 uppercase">Live Stream &mdash; <%= @symbol %></span>
     </div>
 
     <!-- Turbo Stream Subscriptions -->
     <%= turbo_stream_from "trading:#{@symbol}" %>
 
-    <!-- 4-Card Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Price Card -->
-      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Price</h2>
-        <%= render "price", tick: @latest_tick, symbol: @symbol %>
+    <!-- Main Content Container -->
+    <div class="relative z-10 flex-1 min-h-0 flex flex-col gap-4">
+      <!-- Top Grid (Price, Supertrend, Account) -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[48%] min-h-0">
+        <!-- Price Card -->
+        <div class="glass-card rounded-2xl p-4 hover:border-cyan-500/20 transition-all duration-300 flex flex-col h-full overflow-hidden">
+          <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-none">
+            <span class="w-1 h-1 rounded-full bg-cyan-400"></span> Market Price
+          </h2>
+          <div class="flex-1 min-h-0 flex flex-col justify-center">
+            <%= render "price", tick: @latest_tick, symbol: @symbol %>
+          </div>
+        </div>
+
+        <!-- Supertrend Card -->
+        <div class="glass-card rounded-2xl p-4 hover:border-indigo-500/20 transition-all duration-300 flex flex-col h-full overflow-hidden">
+          <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-none">
+            <span class="w-1 h-1 rounded-full bg-indigo-400"></span> Supertrend Signal
+          </h2>
+          <div class="flex-1 min-h-0 flex flex-col justify-center">
+            <%= render "supertrend", supertrend: @supertrend, symbol: @symbol %>
+          </div>
+        </div>
+
+        <!-- Account Card -->
+        <div class="glass-card rounded-2xl p-4 hover:border-purple-500/20 transition-all duration-300 flex flex-col h-full overflow-hidden">
+          <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-none">
+            <span class="w-1 h-1 rounded-full bg-purple-400"></span> Account Portfolio
+          </h2>
+          <div class="flex-1 min-h-0 flex flex-col justify-center">
+            <%= render "account", account: @account, symbol: @symbol %>
+          </div>
+        </div>
       </div>
 
-      <!-- Supertrend Card -->
-      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Supertrend</h2>
-        <%= render "supertrend", supertrend: @supertrend, symbol: @symbol %>
-      </div>
-
-      <!-- Positions Card -->
-      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 md:col-span-2">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Positions</h2>
-        <%= render "positions", positions: @positions, symbol: @symbol %>
-      </div>
-
-      <!-- Account Card -->
-      <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 md:col-span-2">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Account</h2>
-        <%= render "account", account: @account, symbol: @symbol %>
+      <!-- Positions Card (Fills remaining height) -->
+      <div class="glass-card rounded-2xl p-4 hover:border-white/10 transition-all duration-300 flex-1 min-h-0 flex flex-col overflow-hidden">
+        <h2 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 flex-none">
+          <span class="w-1 h-1 rounded-full bg-emerald-400"></span> Open Positions
+        </h2>
+        <div class="flex-1 min-h-0 overflow-y-auto">
+          <%= render "positions", positions: @positions, symbol: @symbol %>
+        </div>
       </div>
     </div>
   </div>

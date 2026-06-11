@@ -1,37 +1,42 @@
 <turbo-frame id="positions-card">
-  <div id="positions-card">
+  <div id="positions-card" class="w-full">
     <% if positions.any? %>
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left">
+      <div class="overflow-x-auto rounded-xl border border-white/5">
+        <table class="w-full text-sm text-left border-collapse">
           <thead>
-            <tr class="border-b border-gray-700">
-              <th class="px-4 py-3 text-gray-400 font-medium">Symbol</th>
-              <th class="px-4 py-3 text-gray-400 font-medium">Side</th>
-              <th class="px-4 py-3 text-gray-400 font-medium text-right">Quantity</th>
-              <th class="px-4 py-3 text-gray-400 font-medium text-right">Entry Price</th>
-              <th class="px-4 py-3 text-gray-400 font-medium text-right">Mark Price</th>
-              <th class="px-4 py-3 text-gray-400 font-medium text-right">Unrealized PnL</th>
+            <tr class="bg-white/[0.02] border-b border-white/5">
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider">Symbol</th>
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider">Side</th>
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Quantity</th>
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Entry Price</th>
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Mark Price</th>
+              <th class="px-5 py-3.5 text-xs text-gray-500 font-bold uppercase tracking-wider text-right">Unrealized PnL</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-white/5">
             <% positions.each do |symbol, pos| %>
               <%
                 pnl = pos.respond_to?(:unrealized_pnl) ? pos.unrealized_pnl : pos["unrealized_pnl"]
                 is_profit = pnl.to_f >= 0
-                pnl_color = is_profit ? "text-green-400" : "text-red-400"
+                pnl_color = is_profit ? "text-emerald-400 neon-text-green" : "text-rose-400 neon-text-red"
                 side = pos.respond_to?(:side) ? pos.side : pos["side"]
-                side_color = side.to_s.upcase == "LONG" ? "text-green-400" : "text-red-400"
+                is_long = side.to_s.upcase == "LONG" || side.to_s.upcase == "BUY"
+                side_class = is_long ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                 qty = pos.respond_to?(:quantity) ? pos.quantity : pos["quantity"]
                 entry = pos.respond_to?(:entry_price) ? pos.entry_price : pos["entry_price"]
                 mark = pos.respond_to?(:mark_price) ? pos.mark_price : pos["mark_price"]
               %>
-              <tr class="border-b border-gray-800 hover:bg-gray-700/50">
-                <td class="px-4 py-3 text-white font-medium"><%= symbol %></td>
-                <td class="px-4 py-3 <%= side_color %> font-semibold"><%= side.to_s.upcase %></td>
-                <td class="px-4 py-3 text-white text-right"><%= qty.to_f.round(6) %></td>
-                <td class="px-4 py-3 text-white text-right"><%= number_to_currency(entry.to_f, precision: 4) %></td>
-                <td class="px-4 py-3 text-white text-right"><%= number_to_currency(mark.to_f, precision: 4) %></td>
-                <td class="px-4 py-3 text-right <%= pnl_color %> font-semibold">
+              <tr class="hover:bg-white/[0.02] transition-colors duration-200">
+                <td class="px-5 py-4 text-white font-bold tracking-tight"><%= symbol %></td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black border tracking-wider <%= side_class %>">
+                    <%= is_long ? "LONG" : "SHORT" %>
+                  </span>
+                </td>
+                <td class="px-5 py-4 text-gray-300 font-medium text-right"><%= qty.to_f.round(6) %></td>
+                <td class="px-5 py-4 text-gray-300 font-medium text-right"><%= number_to_currency(entry.to_f, precision: 2) %></td>
+                <td class="px-5 py-4 text-gray-300 font-medium text-right"><%= number_to_currency(mark.to_f, precision: 2) %></td>
+                <td class="px-5 py-4 text-right <%= pnl_color %> font-extrabold text-base">
                   <%= is_profit ? "+" : "" %><%= number_to_currency(pnl.to_f, precision: 2) %>
                 </td>
               </tr>
@@ -40,12 +45,14 @@
         </table>
       </div>
     <% else %>
-      <div class="text-center py-12">
-        <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p class="text-gray-500">No open positions</p>
-        <p class="text-gray-600 text-sm mt-1">Your positions will appear here when you trade</p>
+      <div class="flex flex-col items-center justify-center text-center py-12 bg-white/[0.01] border border-dashed border-white/5 rounded-2xl">
+        <div class="w-12 h-12 rounded-full bg-slate-800/50 border border-white/5 flex items-center justify-center mb-4 text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <p class="text-gray-400 font-semibold">No open positions</p>
+        <p class="text-gray-600 text-xs mt-1">Ready for automated trades from the daemon.</p>
       </div>
     <% end %>
   </div>

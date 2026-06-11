@@ -4,53 +4,60 @@
       price = tick["c"].to_s
       change_pct = tick["P"].to_f
       is_positive = change_pct >= 0
-      change_color = is_positive ? "text-green-400" : "text-red-400"
-      change_bg = is_positive ? "bg-green-900/30" : "bg-red-900/30"
+      change_color = is_positive ? "text-emerald-400" : "text-rose-400"
+      neon_text_class = is_positive ? "neon-text-green" : "neon-text-red"
+      change_bg = is_positive ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"
     %>
-    <div id="price-card-<%= symbol %>">
-      <!-- Current Price -->
-      <div class="text-4xl font-bold text-white mb-2">
-        <%= number_to_currency(price.to_f, precision: 2) %>
+    <div id="price-card-<%= symbol %>" class="flex flex-col gap-4">
+      <!-- Current Price and Change Row -->
+      <div class="flex items-baseline justify-between gap-4">
+        <div class="text-4xl md:text-5xl font-black text-white tracking-tight <%= neon_text_class %>">
+          <%= number_to_currency(price.to_f, precision: 2) %>
+        </div>
+
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border <%= change_bg %> transition-all duration-300">
+          <span class="w-1.5 h-1.5 rounded-full <%= is_positive ? "bg-emerald-400 animate-pulse" : "bg-rose-400" %>"></span>
+          <span class="<%= change_color %> text-sm font-bold tracking-wide">
+            <%= is_positive ? "+" : "" %><%= change_pct.round(2) %>%
+          </span>
+        </div>
       </div>
 
-      <!-- 24h Change -->
-      <div class="flex items-center gap-2 mb-4">
-        <span class="<%= change_color %> text-lg font-semibold">
-          <%= is_positive ? "+" : "" %><%= change_pct.round(2) %> %
-        </span>
-        <span class="<%= change_bg %> <%= change_color %> text-xs font-medium px-2 py-1 rounded">
-          24h
-        </span>
-      </div>
+      <div class="h-px bg-white/5 w-full"></div>
 
       <!-- High / Low -->
-      <div class="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span class="text-gray-500 block">24h High</span>
-          <span class="text-white font-medium"><%= number_to_currency(tick["h"].to_f, precision: 2) %></span>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+          <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">24h High</span>
+          <span class="text-white text-base font-semibold"><%= number_to_currency(tick["h"].to_f, precision: 2) %></span>
         </div>
-        <div>
-          <span class="text-gray-500 block">24h Low</span>
-          <span class="text-white font-medium"><%= number_to_currency(tick["l"].to_f, precision: 2) %></span>
+        <div class="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+          <span class="text-xs text-gray-500 font-bold uppercase tracking-wider block mb-1">24h Low</span>
+          <span class="text-white text-base font-semibold"><%= number_to_currency(tick["l"].to_f, precision: 2) %></span>
         </div>
       </div>
 
       <!-- Volume -->
-      <div class="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-4 text-sm">
+      <div class="grid grid-cols-2 gap-6">
         <div>
-          <span class="text-gray-500 block">Volume</span>
-          <span class="text-white font-medium"><%= tick["v"].to_f.round(4) %></span>
+          <span class="text-xs text-gray-500 font-semibold block mb-1">24h Volume (<%= symbol.gsub("USDT", "") %>)</span>
+          <span class="text-gray-200 text-sm font-medium"><%= number_with_delimiter(tick["v"].to_f.round(2)) %></span>
         </div>
         <div>
-          <span class="text-gray-500 block">Quote Volume</span>
-          <span class="text-white font-medium"><%= number_to_currency(tick["q"].to_f, precision: 2) %></span>
+          <span class="text-xs text-gray-500 font-semibold block mb-1">Quote Volume</span>
+          <span class="text-gray-200 text-sm font-medium"><%= number_to_currency(tick["q"].to_f, precision: 2) %></span>
         </div>
       </div>
     </div>
   <% else %>
-    <div id="price-card-<%= symbol %>" class="text-gray-500 text-center py-8">
-      <p>No price data available for <%= symbol %></p>
-      <p class="text-sm mt-1">Stream may be disconnected</p>
+    <div id="price-card-<%= symbol %>" class="flex flex-col items-center justify-center text-center py-10">
+      <div class="w-12 h-12 rounded-full bg-slate-800/80 border border-white/10 flex items-center justify-center mb-4 pulse-ring-animation">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      </div>
+      <p class="text-gray-400 font-semibold">No price data available for <%= symbol %></p>
+      <p class="text-gray-600 text-xs mt-1">Waiting for incoming WebSocket connection...</p>
     </div>
   <% end %>
 </turbo-frame>

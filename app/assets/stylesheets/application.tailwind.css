@@ -1,1 +1,52 @@
 @import "tailwindcss";
+
+@utility glass-card {
+  background: rgba(13, 18, 30, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+@utility glass-card-glow-cyan {
+  box-shadow: 0 0 30px rgba(0, 242, 254, 0.15), inset 0 0 0 1px rgba(0, 242, 254, 0.1);
+}
+
+@utility glass-card-glow-green {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.15), inset 0 0 0 1px rgba(16, 185, 129, 0.1);
+}
+
+@utility glass-card-glow-red {
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.15), inset 0 0 0 1px rgba(239, 68, 68, 0.1);
+}
+
+@utility neon-text-cyan {
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+@utility neon-text-green {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+@utility neon-text-red {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+@utility gradient-border-cyan {
+  border-image: linear-gradient(135deg, #00f2fe 0%, rgba(255,255,255,0.05) 100%) 1;
+}
+
+@utility bg-gradient-premium {
+  background: linear-gradient(135deg, rgba(13, 18, 30, 0.8) 0%, rgba(20, 27, 45, 0.8) 100%);
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 0.4; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.pulse-ring-animation {
+  animation: pulse-ring 2s infinite ease-in-out;
+}
+
