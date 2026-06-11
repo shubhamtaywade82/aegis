@@ -184,6 +184,13 @@ end
           symbol: symbol,
           candle: candle_json
         })
+
+        # Calculate and broadcast Supertrend for closed candle
+        begin
+          RealtimeSupertrend.calculate_for(symbol)
+        rescue => e
+          Logger.new(STDOUT).warn("[Supertrend] #{e.message}")
+        end
       end
     end
 

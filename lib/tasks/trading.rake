@@ -15,7 +15,7 @@ namespace :trading do
     Settings.validate!
 
     # 2. Initialize the MarketDataFeed for BTCUSDT, ETHUSDT, SOLUSDT
-    feed = Services::MarketDataFeed.new(symbols: %w[BTCUSDT ETHUSDT SOLUSDT])
+    feed = MarketDataFeed.new(symbols: %w[BTCUSDT ETHUSDT SOLUSDT])
 
     # 3. Handle SIGTERM for clean shutdown (docker stop, Ctrl+C)
     Signal.trap("TERM") do
