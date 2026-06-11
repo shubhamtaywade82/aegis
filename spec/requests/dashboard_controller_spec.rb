@@ -92,14 +92,14 @@ RSpec.describe DashboardController, type: :request do
         expect(assigns(:latest_kline)).to be_nil
       end
 
-      it "sets positions to empty array" do
+      it "sets positions to empty hash" do
         get "/dashboard"
-        expect(assigns(:positions)).to eq([])
+        expect(assigns(:positions)).to eq({})
       end
 
-      it "sets account to empty hash" do
+      it "sets account details" do
         get "/dashboard"
-        expect(assigns(:account)).to eq({})
+        expect(assigns(:account)).to include("cash_balance" => 10000.0)
       end
 
       it "sets @supertrend to nil initially (Phase 3)" do

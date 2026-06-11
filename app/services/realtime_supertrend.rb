@@ -40,18 +40,26 @@ class RealtimeSupertrend
   end
 
   private_class_method def self.parse_kline(k)
+    open_time = k["open_time"] || k["t"]
+    open = k["open"] || k["o"]
+    high = k["high"] || k["h"]
+    low = k["low"] || k["l"]
+    close = k["close"] || k["c"]
+    volume = k["volume"] || k["v"]
+    close_time = k["close_time"] || (open_time ? open_time + 59_999 : nil)
+
     Candle.new(
-      open_time: k["t"],
-      open: k["o"],
-      high: k["h"],
-      low: k["l"],
-      close: k["c"],
-      volume: k["v"],
-      close_time: k["t"] + 59_999,
-      quote_volume: "0",
-      trade_count: "0",
-      taker_buy_base_volume: "0",
-      taker_buy_quote_volume: "0"
+      open_time: open_time,
+      open: BigDecimal(open.to_s),
+      high: BigDecimal(high.to_s),
+      low: BigDecimal(low.to_s),
+      close: BigDecimal(close.to_s),
+      volume: BigDecimal(volume.to_s),
+      close_time: close_time,
+      quote_volume: BigDecimal("0"),
+      trade_count: 0,
+      taker_buy_base_volume: BigDecimal("0"),
+      taker_buy_quote_volume: BigDecimal("0")
     )
   end
 
@@ -74,5 +82,17 @@ class RealtimeSupertrend
       upper_band: result.upper_band,
       lower_band: result.lower_band
     })
+
+    # Broadcast Turbo Stream replace for the supertrend card
+    begin
+      Turbo::StreamsChannel.broadcast_replace_to(
+        "trading:#{symbol}",
+        target: "supertrend-card-#{symbol}",
+        partial: "dashboard/supertrend",
+        locals: { supertrend: result, symbol: symbol }
+      )
+    rescue => e
+      Rails.logger.error "[RealtimeSupertrend] Failed to broadcast Turbo Stream: #{e.message}"
+    end
   end
 end

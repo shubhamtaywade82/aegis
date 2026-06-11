@@ -1,4 +1,4 @@
-<turbo-frame id="price-card-<%= @symbol %>">
+<turbo-frame id="price-card-<%= symbol %>">
   <% if tick %>
     <%
       price = tick["c"].to_s
@@ -7,7 +7,7 @@
       change_color = is_positive ? "text-green-400" : "text-red-400"
       change_bg = is_positive ? "bg-green-900/30" : "bg-red-900/30"
     %>
-    <div id="price-card-<%= @symbol %>">
+    <div id="price-card-<%= symbol %>">
       <!-- Current Price -->
       <div class="text-4xl font-bold text-white mb-2">
         <%= number_to_currency(price.to_f, precision: 2) %>
@@ -48,8 +48,8 @@
       </div>
     </div>
   <% else %>
-    <div id="price-card-<%= @symbol %>" class="text-gray-500 text-center py-8">
-      <p>No price data available for <%= @symbol %></p>
+    <div id="price-card-<%= symbol %>" class="text-gray-500 text-center py-8">
+      <p>No price data available for <%= symbol %></p>
       <p class="text-sm mt-1">Stream may be disconnected</p>
     </div>
   <% end %>

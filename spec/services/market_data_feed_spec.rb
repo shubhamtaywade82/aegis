@@ -9,6 +9,7 @@ RSpec.describe MarketDataFeed do
   before do
     allow(Redis).to receive(:new).and_return(redis)
     allow(redis).to receive(:close)
+    allow(RealtimeSupertrend).to receive(:calculate_for)
   end
 
   describe "#initialize" do
@@ -19,7 +20,7 @@ RSpec.describe MarketDataFeed do
 
     it "uses default symbols when none provided" do
       default_feed = described_class.new
-      expect(default_feed.symbols).to eq(%w[BTCUSDT ETHUSDT SOLUSDT])
+      expect(default_feed.symbols).to eq(%w[BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT ADAUSDT DOGEUSDT])
     end
 
     it "initializes with a Redis connection" do
@@ -246,6 +247,7 @@ RSpec.describe MarketDataFeed do
 
     before do
       allow(Redis).to receive(:new).and_return(redis)
+      allow(feed).to receive(:seed_historical_klines)
       allow(Exchanges::Binance::WebsocketClient).to receive(:new).and_return(ws_client)
       allow(ws_client).to receive(:on)
       allow(ws_client).to receive(:connect)
@@ -254,7 +256,7 @@ RSpec.describe MarketDataFeed do
 
     it "creates WebSocket client with combined stream URL" do
       expect(Exchanges::Binance::WebsocketClient).to receive(:new)
-        .with(ws_url: /wss:\/\/fstream\.binance\.com\/stream\?streams=/)
+        .with(ws_url: /wss:\/\/fstream\.binance\.com\/market\/stream\?streams=/)
 
       feed.start
     end

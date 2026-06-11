@@ -34,25 +34,25 @@
       <!-- Price Card -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Price</h2>
-        <%= render "price", tick: @latest_tick %>
+        <%= render "price", tick: @latest_tick, symbol: @symbol %>
       </div>
 
       <!-- Supertrend Card -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
         <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Supertrend</h2>
-        <%= render "supertrend", supertrend: @supertrend %>
+        <%= render "supertrend", supertrend: @supertrend, symbol: @symbol %>
       </div>
 
       <!-- Positions Card -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 md:col-span-2">
         <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Positions</h2>
-        <%= render "positions", positions: @positions %>
+        <%= render "positions", positions: @positions, symbol: @symbol %>
       </div>
 
       <!-- Account Card -->
       <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 md:col-span-2">
         <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Account</h2>
-        <%= render "account", account: @account %>
+        <%= render "account", account: @account, symbol: @symbol %>
       </div>
     </div>
   </div>

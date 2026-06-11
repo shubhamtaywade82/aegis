@@ -185,8 +185,8 @@ RSpec.describe RealtimeSupertrend do
         earliest = candles.min_by { |c| c.open_time }
         expect(earliest.open_time).to eq(1_234_560_000)
         expect(earliest.close_time).to eq(1_234_619_999)
-        expect(earliest.open).to eq("96000")
-        expect(earliest.close).to eq("96800")
+        expect(earliest.open).to eq(BigDecimal("96000"))
+        expect(earliest.close).to eq(BigDecimal("96800"))
       end
     end
   end

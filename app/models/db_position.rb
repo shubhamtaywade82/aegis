@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class DbPosition < ApplicationRecord
+  self.table_name = "positions"
+
   belongs_to :user
 
   validates :symbol, presence: true

@@ -4,15 +4,15 @@ require "redis"
 require "json"
 
 class MarketDataFeed
-  STREAM_BASE_URL = "wss://fstream.binance.com/stream".freeze
+  STREAM_BASE_URL = "wss://fstream.binance.com/market/stream".freeze
   TICK_TTL = 60
   KLINE_TTL = 60
   MAX_HISTORY_SIZE = 500
 
     attr_reader :symbols, :ws_client, :redis
 
-    # @param symbols [Array<String>] List of trading symbols (e.g., %w[BTCUSDT ETHUSDT SOLUSDT])
-    def initialize(symbols: %w[BTCUSDT ETHUSDT SOLUSDT])
+    # @param symbols [Array<String>] List of trading symbols (e.g., %w[BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT ADAUSDT DOGEUSDT])
+    def initialize(symbols: %w[BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT ADAUSDT DOGEUSDT])
       @symbols = symbols
       @ws_client = nil
       @redis = Redis.new
@@ -25,6 +25,8 @@ class MarketDataFeed
 
       @running = true
       combined_url = build_combined_stream_url
+
+      seed_historical_klines
 
       @ws_client = Exchanges::Binance::WebsocketClient.new(ws_url: combined_url)
 
@@ -118,6 +120,39 @@ end
 
     private
 
+    # Seeds historical klines for symbols and calculates initial Supertrend
+    def seed_historical_klines
+      client = Binance::HistoricalClient.new
+      symbols.each do |symbol|
+        begin
+          existing_history_size = @redis.llen("trading:klines:#{symbol}:history")
+          if existing_history_size < 30
+            Rails.logger.info "[MarketDataFeed] Seeding historical klines for #{symbol}..."
+            klines = client.klines(symbol: symbol, interval: "1m", limit: 100)
+            @redis.del("trading:klines:#{symbol}:history")
+            klines.each do |k|
+              candle_json = {
+                open_time: (k[0] / 1000).to_i,
+                open: k[1].to_s,
+                high: k[2].to_s,
+                low: k[3].to_s,
+                close: k[4].to_s,
+                volume: k[5].to_s,
+                close_time: (k[6] / 1000).to_i
+              }
+              @redis.lpush("trading:klines:#{symbol}:history", candle_json.to_json)
+            end
+            @redis.ltrim("trading:klines:#{symbol}:history", 0, MAX_HISTORY_SIZE - 1)
+          end
+
+          # Always calculate/recalculate initial Supertrend on startup so it is available immediately
+          RealtimeSupertrend.calculate_for(symbol)
+        rescue => e
+          Rails.logger.error "[MarketDataFeed] Failed to seed/calculate Supertrend for #{symbol}: #{e.message}"
+        end
+      end
+    end
+
     # Builds the combined stream WebSocket URL for all symbols.
     #
     # @return [String] Combined stream URL
@@ -175,7 +210,7 @@ end
         candle_json = candle_to_json(candle)
 
         # Push to history list and trim
-        @redis.lpush("trading:klines:#{symbol}:history", candle_json)
+        @redis.lpush("trading:klines:#{symbol}:history", candle_json.to_json)
         @redis.ltrim("trading:klines:#{symbol}:history", 0, MAX_HISTORY_SIZE - 1)
 
         # Broadcast closed kline
