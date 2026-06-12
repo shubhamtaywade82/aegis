@@ -189,6 +189,9 @@ end
 
       # Broadcast Turbo Stream update for price card
       broadcast_price_update(symbol, data)
+
+      # Process ticker in the matching engine to check and trigger open orders
+      MatchingEngine.process_ticker_tick(symbol, data["c"])
     end
 
     # Processes a kline event and stores/broadcasts it.

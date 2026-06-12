@@ -10,6 +10,7 @@ RSpec.describe MarketDataFeed do
     allow(Redis).to receive(:new).and_return(redis)
     allow(redis).to receive(:close)
     allow(RealtimeSupertrend).to receive(:calculate_for)
+    allow(MatchingEngine).to receive(:process_ticker_tick)
   end
 
   describe "#initialize" do
