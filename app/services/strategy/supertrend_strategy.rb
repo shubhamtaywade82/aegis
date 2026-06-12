@@ -29,15 +29,25 @@ module Strategy
 
     # Evaluates a single symbol: fetches price, checks flip, generates/executes orders, syncs position
     def evaluate_symbol(symbol)
+      Rails.logger.info "[SupertrendStrategy] ===== Evaluating #{symbol} ====="
+
       price = fetch_latest_price(symbol)
-      return if price.nil?
+      if price.nil?
+        Rails.logger.warn "[SupertrendStrategy] #{symbol}: No price in Redis (key trading:ticks:#{symbol}), skipping"
+        return
+      end
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: Price = #{price.to_f}"
 
       paper_engine.set_price(symbol, price)
 
       result = signal_monitor.update_and_check(symbol)
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: Direction previous=#{result[:from].inspect} current=#{result[:to].inspect} flipped=#{result[:flipped]}"
+
       return unless result[:flipped]
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: FLIP detected! #{result[:from]} -> #{result[:to]}"
 
       current_position = position_tracker.current_position(symbol)
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: Tracked position = #{current_position.inspect}"
 
       orders = order_generator.generate_orders(
         symbol: symbol,
@@ -45,18 +55,26 @@ module Strategy
         new_direction: result[:to],
         current_position: current_position
       )
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: Generated #{orders.size} orders"
+      orders.each_with_index do |o, i|
+        Rails.logger.info "[SupertrendStrategy] #{symbol}: Order[#{i}] side=#{o.side} qty=#{o.quantity.to_f} reduce_only=#{o.reduce_only}"
+      end
 
       return if orders.empty?
+      Rails.logger.info "[SupertrendStrategy] #{symbol}: Executing #{orders.size} orders..."
 
       orders.each do |order|
         begin
-          execution_engine.execute(order)
+          response = execution_engine.execute(order)
+          Rails.logger.info "[SupertrendStrategy] #{symbol}: Order EXECUTED side=#{order.side} qty=#{order.quantity.to_f} reduce_only=#{order.reduce_only} status=#{response.status}"
           sync_position(symbol)
+          synced = position_tracker.current_position(symbol)
+          Rails.logger.info "[SupertrendStrategy] #{symbol}: Position synced -> #{synced.inspect}"
         rescue Execution::RiskEngine::RiskError => e
-          Rails.logger.warn "[SupertrendStrategy] Risk check failed for #{symbol}: #{e.message}"
+          Rails.logger.warn "[SupertrendStrategy] #{symbol}: Risk check failed -> #{e.message}"
           break
         rescue StandardError => e
-          Rails.logger.error "[SupertrendStrategy] Order execution failed for #{symbol}: #{e.message}"
+          Rails.logger.error "[SupertrendStrategy] #{symbol}: Order execution error -> #{e.class}: #{e.message}"
           break
         end
       end

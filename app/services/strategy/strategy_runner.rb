@@ -21,14 +21,18 @@ module Strategy
 
         @running = true
         @thread = Thread.new do
+          Rails.logger.info "[StrategyRunner] Poll loop started (interval=#{check_interval_seconds}s)"
           while running?
             begin
+              Rails.logger.info "[StrategyRunner] Poll cycle starting..."
               strategy.execute
+              Rails.logger.info "[StrategyRunner] Poll cycle complete"
             rescue StandardError => e
-              Rails.logger.error "[StrategyRunner] Error during strategy execution: #{e.message}"
+              Rails.logger.error "[StrategyRunner] Error during strategy execution: #{e.class}: #{e.message}"
             end
             sleep(check_interval_seconds)
           end
+          Rails.logger.info "[StrategyRunner] Poll loop stopped"
         end
       end
     end

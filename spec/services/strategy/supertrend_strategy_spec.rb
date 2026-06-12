@@ -170,7 +170,7 @@ RSpec.describe Strategy::SupertrendStrategy do
         # Stub execution_engine.execute to raise RiskError
         allow(execution_engine).to receive(:execute).and_raise(Execution::RiskEngine::RiskError.new("test"))
 
-        expect(Rails.logger).to receive(:warn).with(/Risk check failed for BTCUSDT: test/)
+        expect(Rails.logger).to receive(:warn).with(/\[SupertrendStrategy\] BTCUSDT: Risk check failed -> test/)
 
         strategy.evaluate_symbol("BTCUSDT")
 
@@ -209,7 +209,7 @@ RSpec.describe Strategy::SupertrendStrategy do
         # Stub execution_engine.execute to raise StandardError
         allow(execution_engine).to receive(:execute).and_raise(StandardError.new("test"))
 
-        expect(Rails.logger).to receive(:error).with(/Order execution failed for BTCUSDT: test/)
+        expect(Rails.logger).to receive(:error).with(/\[SupertrendStrategy\] BTCUSDT: Order execution error -> StandardError: test/)
 
         strategy.evaluate_symbol("BTCUSDT")
 
